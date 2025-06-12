@@ -1,0 +1,54 @@
+--------------------
+L = 1024 Block dimensions: 1024 1 1
+Theoretical fetch size (GB): 4.294918208
+Theoretical fetch size (GB): 4.269850592
+Average kernel time: 285076519.52 ns
+Effective memory bandwidth: 30.04375391709216 GB/s
+--------------------
+L = 1024 Block dimensions: 512 2 1
+Theoretical fetch size (GB): 4.294918208
+Theoretical fetch size (GB): 4.269850592
+Average kernel time: 238344129.42 ns
+Effective memory bandwidth: 35.93446509818383 GB/s
+--------------------
+L = 1024 Block dimensions: 256 4 1
+Theoretical fetch size (GB): 4.294918208
+Theoretical fetch size (GB): 4.269850592
+Average kernel time: 224772494.15 ns
+Effective memory bandwidth: 38.10416764910912 GB/s
+--------------------
+L = 1024 Block dimensions: 16 8 8
+Theoretical fetch size (GB): 4.294918208
+Theoretical fetch size (GB): 4.269850592
+Average kernel time: 61922995.84 ns
+Effective memory bandwidth: 138.31321763129992 GB/s
+--------------------
+L = 1024 Block dimensions: 32 32 1
+Theoretical fetch size (GB): 4.294918208
+Theoretical fetch size (GB): 4.269850592
+Average kernel time: 218231415.81 ns
+Effective memory bandwidth: 39.246268774871496 GB/s
+--------------------
+L = 512 Block dimensions: 1024 1 1
+Theoretical fetch size (GB): 0.5368464000000001
+Theoretical fetch size (GB): 0.5306040000000001
+Average kernel time: 28325696.63 ns
+Effective memory bandwidth: 37.684877231561316 GB/s
+--------------------
+L = 512 Block dimensions: 512 2 1
+Theoretical fetch size (GB): 0.5368464000000001
+Theoretical fetch size (GB): 0.5306040000000001
+Average kernel time: 29205178.07 ns
+Effective memory bandwidth: 36.55003908695565 GB/s
+--------------------
+L = 512 Block dimensions: 256 4 1
+Theoretical fetch size (GB): 0.5368464000000001
+Theoretical fetch size (GB): 0.5306040000000001
+Average kernel time: 27290510.02 ns
+Effective memory bandwidth: 39.114344115141606 GB/s
+--------------------
+L = 512 Block dimensions: 16 8 8
+Theoretical fetch size (GB): 0.5368464000000001
+Theoretical fetch size (GB): 0.5306040000000001
+Average kernel time: 7721977.72 ns
+Effective memory bandwidth: 138.23536388032986 GB/s
