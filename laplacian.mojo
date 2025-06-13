@@ -5,15 +5,13 @@ from layout import Layout, LayoutTensor
 from sys.info import sizeof
 from math import ceildiv
 from time import monotonic
+from sys import argv
 
 alias precision = Float32
 alias float_dtype = DType.float32
 alias L = 256
 alias steps = 100
 alias layout = Layout.row_major(L, L, L)
-alias BLK_X = 16
-alias BLK_Y = 16
-alias BLK_Z = 4
 
 fn laplacian_kernel(
     f: LayoutTensor[float_dtype, layout, MutableAnyOrigin],
@@ -63,6 +61,20 @@ fn test_function_kernel(
         u[i, j, k] = c * x * (x - Lx) + c * y * (y - Ly) + c * z * (z - Lz)
 
 def main():
+    args = argv()
+    BLK_X: Int = 1024
+    BLK_Y: Int = 1
+    BLK_Z: Int = 1
+    i = 0
+    while i < len(args):
+        arg = args[i]
+        if arg == "--block" and i + 3 < len(args):
+            BLK_X = args[i + 1].__int__()
+            BLK_Y = args[i + 2].__int__()
+            BLK_Z = args[i + 3].__int__()
+            i += 3
+        i += 1
+
     @parameter
     if not has_accelerator():
         print("No compatible GPU found")
