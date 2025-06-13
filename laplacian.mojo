@@ -8,12 +8,12 @@ from time import monotonic
 
 alias precision = Float32
 alias float_dtype = DType.float32
-alias L = 512
+alias L = 256
 alias steps = 100
 alias layout = Layout.row_major(L, L, L)
 alias BLK_X = 16
-alias BLK_Y = 8
-alias BLK_Z = 8
+alias BLK_Y = 16
+alias BLK_Z = 4
 
 fn laplacian_kernel(
     f: LayoutTensor[float_dtype, layout, MutableAnyOrigin],
@@ -70,15 +70,11 @@ def main():
         nx = L
         ny = L
         nz = L
-        print("--------------------")
-        print("L =", L, "Block dimensions:", BLK_X, BLK_Y, BLK_Z)
-
-        theoretical_fetch_size = (nx * ny * nz - 8 - 4 * (nx - 2) - 4 * (ny - 2) - 4 * (nz - 2)) * sizeof[precision]()
-        theoretical_write_size = ((nx - 2) * (ny - 2) * (nz - 2)) * sizeof[precision]()
-        print("Theoretical fetch size (GB):", theoretical_fetch_size * 1e-9)
-        print("Theoretical fetch size (GB):", theoretical_write_size * 1e-9)
+        print("------------------------------")
+        print("L =", L, "; Block dimensions:", BLK_X, BLK_Y, BLK_Z)
 
         ctx = DeviceContext()
+        print("GPU:", ctx.name())
         d_u = ctx.enqueue_create_buffer[float_dtype](nx * ny * nz)
         d_f = ctx.enqueue_create_buffer[float_dtype](nx * ny * nz)
         u_tensor = LayoutTensor[float_dtype, layout](d_u)
@@ -126,8 +122,12 @@ def main():
             total_elapsed += (end - start)
 
         # Effective memory bandwidth
+        theoretical_fetch_size = (nx * ny * nz - 8 - 4 * (nx - 2) - 4 * (ny - 2) - 4 * (nz - 2)) * sizeof[precision]()
+        theoretical_write_size = ((nx - 2) * (ny - 2) * (nz - 2)) * sizeof[precision]()
+        print("Theoretical fetch size (GB):", theoretical_fetch_size * 1e-9)
+        print("Theoretical fetch size (GB):", theoretical_write_size * 1e-9)
         datasize = theoretical_fetch_size + theoretical_write_size
-        print("Average kernel time:", total_elapsed / steps, "ns")
+        print("Average kernel time:", total_elapsed / 1e9 / steps, "s")
         print("Effective memory bandwidth:", datasize * steps / total_elapsed, "GB/s")
 
         # # Copy result to host
