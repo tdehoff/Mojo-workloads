@@ -1,0 +1,252 @@
+------------------------------
+L = 1024 ; Block dimensions: 1024 1 1
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.20529365107 s
+Effective memory bandwidth: 83.43919800110747 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 1024 1 1
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.21028656096999998 s
+Effective memory bandwidth: 81.45807093418462 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 1024 1 1
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.20878320374 s
+Effective memory bandwidth: 82.04461514697131 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 512 2 1
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.19783724282 s
+Effective memory bandwidth: 86.58398871634658 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 512 2 1
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.19367307673 s
+Effective memory bandwidth: 88.44563162426712 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 512 2 1
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.19733389296999998 s
+Effective memory bandwidth: 86.80484301094766 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 256 2 2
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.14602170182 s
+Effective memory bandwidth: 117.30816300932767 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 256 2 2
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.14371192748 s
+Effective memory bandwidth: 119.19356938820455 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 256 2 2
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.14346534759000001 s
+Effective memory bandwidth: 119.39843235840725 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 256 4 1
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.1875911734 s
+Effective memory bandwidth: 91.31313211349634 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 256 4 1
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.19116202000000002 s
+Effective memory bandwidth: 89.60743143434036 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 256 4 1
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.19526885002 s
+Effective memory bandwidth: 87.72283750452539 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 128 4 2
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.14342892500999999 s
+Effective memory bandwidth: 119.42875259509692 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 128 4 2
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.14001693373000001 s
+Effective memory bandwidth: 122.33904245490436 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 128 4 2
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.13937559163 s
+Effective memory bandwidth: 122.90199022418312 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 128 8 1
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.18806475215 s
+Effective memory bandwidth: 91.08319025320344 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 128 8 1
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.19251051288999999 s
+Effective memory bandwidth: 88.97975150992285 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 128 8 1
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.19593925439999998 s
+Effective memory bandwidth: 87.42269461243801 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 64 16 1
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.18630570200000002 s
+Effective memory bandwidth: 91.94317412786432 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 64 16 1
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.18623750935 s
+Effective memory bandwidth: 91.97684000277359 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 64 16 1
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.18649018929 s
+Effective memory bandwidth: 91.8522184207924 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 64 4 4
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.08990299668 s
+Effective memory bandwidth: 190.53355541607516 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 64 4 4
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.09064734676000001 s
+Effective memory bandwidth: 188.96899040357528 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 64 4 4
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.09138897798000001 s
+Effective memory bandwidth: 187.43548706441067 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 32 8 4
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.08592377866999999 s
+Effective memory bandwidth: 199.35735910530573 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 32 8 4
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.08568089976 s
+Effective memory bandwidth: 199.92247569740042 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 32 8 4
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.08778631267999999 s
+Effective memory bandwidth: 195.12765802615323 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 32 32 1
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.18370195414 s
+Effective memory bandwidth: 93.24635483706129 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 32 32 1
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.18780550524999998 s
+Effective memory bandwidth: 91.20892157659473 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 32 32 1
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.19321019667000003 s
+Effective memory bandwidth: 88.65752374993428 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 16 8 8
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.06796576416 s
+Effective memory bandwidth: 252.0318547390257 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 16 8 8
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.06797308326 s
+Effective memory bandwidth: 252.00471684473652 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 16 8 8
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.06903833201000001 s
+Effective memory bandwidth: 248.11633046868567 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 16 16 4
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.07095778526 s
+Effective memory bandwidth: 241.40462582414034 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 16 16 4
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.0700540979 s
+Effective memory bandwidth: 244.51870930451307 GB/s
+------------------------------
+L = 1024 ; Block dimensions: 16 16 4
+GPU: NVIDIA H100 NVL
+Theoretical fetch size (GB): 8.589836416
+Theoretical fetch size (GB): 8.539701184
+Average kernel time: 0.07077871816 s
+Effective memory bandwidth: 242.0153691011688 GB/s

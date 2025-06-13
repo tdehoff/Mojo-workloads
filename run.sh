@@ -18,7 +18,7 @@ blocks=(
 for block in "${blocks[@]}"; do
   read -r BX BY BZ <<< "$block"
   for run in {1..3}; do
-    mojo laplacian.mojo --l $L --block $BX $BY $BZ >> res.txt
+    mojo laplacian.mojo --block $BX $BY $BZ >> res.txt
   done
 done
 

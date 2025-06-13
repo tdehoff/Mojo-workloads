@@ -1,0 +1,252 @@
+------------------------------
+L = 128 ; Block dimensions: 1024 1 1
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00024110282 s
+Effective memory bandwidth: 135.9090864221331 GB/s
+------------------------------
+L = 128 ; Block dimensions: 1024 1 1
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00024031440000000002 s
+Effective memory bandwidth: 136.35497498277257 GB/s
+------------------------------
+L = 128 ; Block dimensions: 1024 1 1
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00024140803 s
+Effective memory bandwidth: 135.73725778715811 GB/s
+------------------------------
+L = 128 ; Block dimensions: 512 2 1
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00024192381999999998 s
+Effective memory bandwidth: 135.44786123168856 GB/s
+------------------------------
+L = 128 ; Block dimensions: 512 2 1
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00024028941000000002 s
+Effective memory bandwidth: 136.36915584419637 GB/s
+------------------------------
+L = 128 ; Block dimensions: 512 2 1
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00023854079 s
+Effective memory bandwidth: 137.3688080768073 GB/s
+------------------------------
+L = 128 ; Block dimensions: 256 2 2
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00025383506 s
+Effective memory bandwidth: 129.09195443686937 GB/s
+------------------------------
+L = 128 ; Block dimensions: 256 2 2
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00025425587 s
+Effective memory bandwidth: 128.87829885697428 GB/s
+------------------------------
+L = 128 ; Block dimensions: 256 2 2
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00025431217 s
+Effective memory bandwidth: 128.84976759075275 GB/s
+------------------------------
+L = 128 ; Block dimensions: 256 4 1
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00018342477 s
+Effective memory bandwidth: 178.64579576684218 GB/s
+------------------------------
+L = 128 ; Block dimensions: 256 4 1
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00018352156 s
+Effective memory bandwidth: 178.55157726427348 GB/s
+------------------------------
+L = 128 ; Block dimensions: 256 4 1
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00018395707000000002 s
+Effective memory bandwidth: 178.12886452257584 GB/s
+------------------------------
+L = 128 ; Block dimensions: 128 4 2
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00018947624 s
+Effective memory bandwidth: 172.9402272284905 GB/s
+------------------------------
+L = 128 ; Block dimensions: 128 4 2
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.0001871353 s
+Effective memory bandwidth: 175.10359616812008 GB/s
+------------------------------
+L = 128 ; Block dimensions: 128 4 2
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00018786881 s
+Effective memory bandwidth: 174.4199263305069 GB/s
+------------------------------
+L = 128 ; Block dimensions: 128 8 1
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00015192489999999999 s
+Effective memory bandwidth: 215.68593430043396 GB/s
+------------------------------
+L = 128 ; Block dimensions: 128 8 1
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00015374993 s
+Effective memory bandwidth: 213.12571654504168 GB/s
+------------------------------
+L = 128 ; Block dimensions: 128 8 1
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00015048739 s
+Effective memory bandwidth: 217.74624438632367 GB/s
+------------------------------
+L = 128 ; Block dimensions: 64 16 1
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00014511434 s
+Effective memory bandwidth: 225.80858652563214 GB/s
+------------------------------
+L = 128 ; Block dimensions: 64 16 1
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00014537574 s
+Effective memory bandwidth: 225.40256028963293 GB/s
+------------------------------
+L = 128 ; Block dimensions: 64 16 1
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00014666324999999998 s
+Effective memory bandwidth: 223.4238229413299 GB/s
+------------------------------
+L = 128 ; Block dimensions: 64 4 4
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00018249776 s
+Effective memory bandwidth: 179.55323944798008 GB/s
+------------------------------
+L = 128 ; Block dimensions: 64 4 4
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00018091444 s
+Effective memory bandwidth: 181.12464654562677 GB/s
+------------------------------
+L = 128 ; Block dimensions: 64 4 4
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00018252054 s
+Effective memory bandwidth: 179.53082979044441 GB/s
+------------------------------
+L = 128 ; Block dimensions: 32 8 4
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00018729881 s
+Effective memory bandwidth: 174.95073246861526 GB/s
+------------------------------
+L = 128 ; Block dimensions: 32 8 4
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00018487649 s
+Effective memory bandwidth: 177.24300153037305 GB/s
+------------------------------
+L = 128 ; Block dimensions: 32 8 4
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00018589819000000001 s
+Effective memory bandwidth: 176.26887061138143 GB/s
+------------------------------
+L = 128 ; Block dimensions: 32 32 1
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00014999019000000002 s
+Effective memory bandwidth: 218.4680478103268 GB/s
+------------------------------
+L = 128 ; Block dimensions: 32 32 1
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00014995849 s
+Effective memory bandwidth: 218.51423017129608 GB/s
+------------------------------
+L = 128 ; Block dimensions: 32 32 1
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00014866377 s
+Effective memory bandwidth: 220.41728122460503 GB/s
+------------------------------
+L = 128 ; Block dimensions: 16 8 8
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00014359851 s
+Effective memory bandwidth: 228.19222845696657 GB/s
+------------------------------
+L = 128 ; Block dimensions: 16 8 8
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00013692835 s
+Effective memory bandwidth: 239.30810529740555 GB/s
+------------------------------
+L = 128 ; Block dimensions: 16 8 8
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00013655294 s
+Effective memory bandwidth: 239.9660087875076 GB/s
+------------------------------
+L = 128 ; Block dimensions: 16 16 4
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00018281946 s
+Effective memory bandwidth: 179.23728688401116 GB/s
+------------------------------
+L = 128 ; Block dimensions: 16 16 4
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00018383217 s
+Effective memory bandwidth: 178.24988955959122 GB/s
+------------------------------
+L = 128 ; Block dimensions: 16 16 4
+GPU: AMD Instinct MI300A
+Theoretical fetch size (GB): 0.016765056
+Theoretical fetch size (GB): 0.016003008000000003
+Average kernel time: 0.00018395057 s
+Effective memory bandwidth: 178.13515880923882 GB/s

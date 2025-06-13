@@ -1,0 +1,216 @@
+nx,ny,nz = 256, 256, 256
+block sizes = 1024, 1, 1
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.256982 ms, effective memory bandwidth: 1032.33 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 1024, 1, 1
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.255414 ms, effective memory bandwidth: 1038.67 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 1024, 1, 1
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.255487 ms, effective memory bandwidth: 1038.37 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 512, 2, 1
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.156672 ms, effective memory bandwidth: 1693.28 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 512, 2, 1
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.157274 ms, effective memory bandwidth: 1686.8 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 512, 2, 1
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.15741 ms, effective memory bandwidth: 1685.35 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 256, 2, 2
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.113168 ms, effective memory bandwidth: 2344.21 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 256, 2, 2
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.113577 ms, effective memory bandwidth: 2335.76 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 256, 2, 2
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.113072 ms, effective memory bandwidth: 2346.21 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 256, 4, 1
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.117088 ms, effective memory bandwidth: 2265.73 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 256, 4, 1
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.117577 ms, effective memory bandwidth: 2256.3 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 256, 4, 1
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.116817 ms, effective memory bandwidth: 2270.99 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 128, 4, 2
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.113841 ms, effective memory bandwidth: 2330.35 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 128, 4, 2
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.113217 ms, effective memory bandwidth: 2343.19 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 128, 4, 2
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.113218 ms, effective memory bandwidth: 2343.19 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 128, 8, 1
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.116772 ms, effective memory bandwidth: 2271.87 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 128, 8, 1
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.116774 ms, effective memory bandwidth: 2271.82 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 128, 8, 1
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.117367 ms, effective memory bandwidth: 2260.34 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 64, 16, 1
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.116554 ms, effective memory bandwidth: 2276.12 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 64, 16, 1
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.117235 ms, effective memory bandwidth: 2262.88 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 64, 16, 1
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.117118 ms, effective memory bandwidth: 2265.15 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 64, 4, 4
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.111741 ms, effective memory bandwidth: 2374.16 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 64, 4, 4
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.111783 ms, effective memory bandwidth: 2373.25 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 64, 4, 4
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.111754 ms, effective memory bandwidth: 2373.88 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 32, 8, 4
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.112289 ms, effective memory bandwidth: 2362.57 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 32, 8, 4
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.112281 ms, effective memory bandwidth: 2362.74 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 32, 8, 4
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.112212 ms, effective memory bandwidth: 2364.18 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 32, 32, 1
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.117227 ms, effective memory bandwidth: 2263.04 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 32, 32, 1
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.117257 ms, effective memory bandwidth: 2262.46 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 32, 32, 1
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.117412 ms, effective memory bandwidth: 2259.48 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 16, 8, 8
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.116412 ms, effective memory bandwidth: 2278.89 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 16, 8, 8
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.116618 ms, effective memory bandwidth: 2274.86 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 16, 8, 8
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.116509 ms, effective memory bandwidth: 2276.99 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 16, 16, 4
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.116063 ms, effective memory bandwidth: 2285.74 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 16, 16, 4
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.115872 ms, effective memory bandwidth: 2289.52 GB/s
+------------------------------
+nx,ny,nz = 256, 256, 256
+block sizes = 16, 16, 4
+Theoretical fetch size (GB): 0.134193
+Theoretical write size (GB): 0.131097
+Laplacian kernel took: 0.115891 ms, effective memory bandwidth: 2289.12 GB/s
+------------------------------

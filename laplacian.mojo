@@ -7,9 +7,9 @@ from math import ceildiv
 from time import monotonic
 from sys import argv
 
-alias precision = Float32
-alias float_dtype = DType.float32
-alias L = 256
+alias precision = Float64
+alias float_dtype = DType.float64
+alias L = 128
 alias steps = 100
 alias layout = Layout.row_major(L, L, L)
 
