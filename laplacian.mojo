@@ -9,10 +9,11 @@ from sys import argv
 
 alias precision = Float64
 alias float_dtype = DType.float64
-alias L = 128
+alias L = 1024
 alias steps = 100
 alias layout = Layout.row_major(L, L, L)
 
+@always_inline("nodebug")
 fn laplacian_kernel(
     f: LayoutTensor[float_dtype, layout, MutableAnyOrigin],
     u: LayoutTensor[float_dtype, layout, MutableAnyOrigin],
@@ -131,6 +132,7 @@ def main():
             )
             ctx.synchronize()
             end = monotonic()
+            # print("Run took:", (end - start) / 1e9, "s")
             total_elapsed += (end - start)
 
         # Effective memory bandwidth
@@ -140,7 +142,7 @@ def main():
         print("Theoretical fetch size (GB):", theoretical_write_size * 1e-9)
         datasize = theoretical_fetch_size + theoretical_write_size
         print("Average kernel time:", total_elapsed / 1e9 / steps, "s")
-        print("Effective memory bandwidth:", datasize * steps / total_elapsed, "GB/s")
+        print("Effective memory bandwidth:", datasize* 1e-9 * steps / (total_elapsed / 1e9), "GB/s")
 
         # # Copy result to host
         # h_f = ctx.enqueue_create_host_buffer[float_dtype](nx * ny * nz)
