@@ -8,15 +8,14 @@ from time import monotonic
 from sys import argv
 
 alias precision = Float64
-alias float_dtype = DType.float64
+alias dtype = DType.float64
 alias L = 1024
 alias steps = 100
-alias layout = Layout.row_major(L, L, L)
+alias layout = Layout.col_major(L, L, L)
 
-@always_inline("nodebug")
 fn laplacian_kernel(
-    f: LayoutTensor[float_dtype, layout, MutableAnyOrigin],
-    u: LayoutTensor[float_dtype, layout, MutableAnyOrigin],
+    f: LayoutTensor[dtype, layout, MutableAnyOrigin],
+    u: LayoutTensor[dtype, layout, MutableAnyOrigin],
     nx: Int,
     ny: Int,
     nz: Int,
@@ -38,7 +37,7 @@ fn laplacian_kernel(
                + (u[i    , j    , k - 1] + u[i    , j    , k + 1]) * invhz2
 
 fn test_function_kernel(
-    u: LayoutTensor[float_dtype, layout, MutableAnyOrigin],
+    u: LayoutTensor[dtype, layout, MutableAnyOrigin],
     nx: Int,
     ny: Int,
     nz: Int,
@@ -88,10 +87,10 @@ def main():
 
         ctx = DeviceContext()
         print("GPU:", ctx.name())
-        d_u = ctx.enqueue_create_buffer[float_dtype](nx * ny * nz)
-        d_f = ctx.enqueue_create_buffer[float_dtype](nx * ny * nz)
-        u_tensor = LayoutTensor[float_dtype, layout](d_u)
-        f_tensor = LayoutTensor[float_dtype, layout](d_f)
+        d_u = ctx.enqueue_create_buffer[dtype](nx * ny * nz)
+        d_f = ctx.enqueue_create_buffer[dtype](nx * ny * nz)
+        u_tensor = LayoutTensor[dtype, layout](d_u)
+        f_tensor = LayoutTensor[dtype, layout](d_f)
 
         # Grid point spacings
         hx = 1.0 / (nx - 1)
@@ -145,7 +144,7 @@ def main():
         print("Effective memory bandwidth:", datasize* 1e-9 * steps / (total_elapsed / 1e9), "GB/s")
 
         # # Copy result to host
-        # h_f = ctx.enqueue_create_host_buffer[float_dtype](nx * ny * nz)
+        # h_f = ctx.enqueue_create_host_buffer[dtype](nx * ny * nz)
         # ctx.enqueue_copy(dst_buf=h_f, src_buf=d_f)
         # ctx.synchronize()
         # print("h_f:", h_f)
