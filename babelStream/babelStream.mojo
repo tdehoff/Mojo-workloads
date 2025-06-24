@@ -9,6 +9,7 @@ from memory import stack_allocation
 from os.atomic import Atomic
 from gpu.memory import AddressSpace, load
 from collections import List
+from python import Python
 
 alias dtype = DType.float64
 # Default size of 2^25
@@ -95,56 +96,8 @@ fn dot_kernel[size: Int](
     if local_tid == 0:
         _ =  Atomic.fetch_add(output, tb_sum[0])
 
-def run_all(
-    a_ptr: UnsafePointer[Scalar[dtype]],
-    b_ptr: UnsafePointer[Scalar[dtype]],
-    c_ptr: UnsafePointer[Scalar[dtype]],
-    out_ptr: UnsafePointer[Scalar[dtype]],
-    ctx: DeviceContext,
-):
-    # Test copy:
-    start = monotonic()
-    ctx.enqueue_function[copy_kernel](
-        a_ptr, b_ptr,
-        grid_dim = (ceildiv(SIZE, TBSize)),
-        block_dim = TBSize
-    )
-    ctx.synchronize()
-    end = monotonic()
-
-    # Test mul:
-    ctx.enqueue_function[mul_kernel](
-        b_ptr, c_ptr, startScalar,
-        grid_dim = (ceildiv(SIZE, TBSize)),
-        block_dim = TBSize
-    )
-    ctx.synchronize()
-
-    # Test add:
-    ctx.enqueue_function[add_kernel](
-        a_ptr, b_ptr, c_ptr,
-        grid_dim = (ceildiv(SIZE, TBSize)),
-        block_dim = TBSize
-    )
-    ctx.synchronize()
-
-    # Test triad:
-    ctx.enqueue_function[triad_kernel](
-        a_ptr, b_ptr, c_ptr, startScalar,
-        grid_dim = (ceildiv(SIZE, TBSize)),
-        block_dim = TBSize
-    )
-    ctx.synchronize()
-
-    # Test dot:
-    ctx.enqueue_function[dot_kernel[SIZE]](
-        a_ptr, b_ptr, out_ptr,
-        grid_dim = (ceildiv(SIZE, TBSize)),
-        block_dim = TBSize
-    )
-    ctx.synchronize()
-
 def main():
+    np = Python.import_module("numpy")
     @parameter
     if not has_accelerator():
         print("No compatible GPU found")
@@ -158,7 +111,7 @@ def main():
         a_ptr = d_a.unsafe_ptr()
         b_ptr = d_b.unsafe_ptr()
         c_ptr = d_c.unsafe_ptr()
-        sum_ptr = d_sum.unsafe_ptr()
+        out_ptr = d_sum.unsafe_ptr()
 
         # Initialize a, b, c
         ctx.enqueue_function[init_kernel](
@@ -169,20 +122,66 @@ def main():
         )
         ctx.synchronize()
 
-        # Warmup call
-        #_ = run_all(a_ptr, b_ptr, c_ptr, sum_ptr, ctx)
-
         # Timing:
-        total_elapsed: UInt = 0
-        kernel_timings = List[List[Float32]]()
-        for _ in range(5):
-            kernel_timings.append(List[Float32](num_runs))
+        # total_elapsed: UInt = 0
+        kernel_timings = np.zeros(Python.tuple(5, num_runs), dtype="float32")
 
         for i in range(num_runs):
-            start = monotonic()
-            timings = run_all(a_ptr, b_ptr, c_ptr, sum_ptr, ctx)
-            end = monotonic()
-            total_elapsed += (end - start)
+            # Test copy:
+                start = monotonic()
+                ctx.enqueue_function[copy_kernel](
+                    a_ptr, b_ptr,
+                    grid_dim = (ceildiv(SIZE, TBSize)),
+                    block_dim = TBSize
+                )
+                ctx.synchronize()
+                end = monotonic()
+                kernel_timings[0][i] = Float32(end - start)
+
+                # Test mul:
+                start = monotonic()
+                ctx.enqueue_function[mul_kernel](
+                    b_ptr, c_ptr, startScalar,
+                    grid_dim = (ceildiv(SIZE, TBSize)),
+                    block_dim = TBSize
+                )
+                ctx.synchronize()
+                end = monotonic()
+                kernel_timings[1][i] = Float32(end - start)
+
+                # Test add:
+                start = monotonic()
+                ctx.enqueue_function[add_kernel](
+                    a_ptr, b_ptr, c_ptr,
+                    grid_dim = (ceildiv(SIZE, TBSize)),
+                    block_dim = TBSize
+                )
+                ctx.synchronize()
+                end = monotonic()
+                kernel_timings[2][i] = Float32(end - start)
+
+                # Test triad:
+                start = monotonic()
+                ctx.enqueue_function[triad_kernel](
+                    a_ptr, b_ptr, c_ptr, startScalar,
+                    grid_dim = (ceildiv(SIZE, TBSize)),
+                    block_dim = TBSize
+                )
+                ctx.synchronize()
+                end = monotonic()
+                kernel_timings[3][i] = Float32(end - start)
+
+                # Test dot:
+                start = monotonic()
+                ctx.enqueue_function[dot_kernel[SIZE]](
+                    a_ptr, b_ptr, out_ptr,
+                    grid_dim = (ceildiv(SIZE, TBSize)),
+                    block_dim = TBSize
+                )
+                ctx.synchronize()
+                end = monotonic()
+                kernel_timings[4][i] = Float32(end - start)
+
 
         kernel_names = ["Copy", "Mul", "Add", "Triad", "Dot"]
         # Copy: 2N, Mul: 2N, Add: 3N, Triad: 3N, Dot: 2N
@@ -194,12 +193,12 @@ def main():
             2 * SIZE * sizeof[Scalar[dtype]](),
         )
 
-        theoretical_data_size = (2 + 2 + 3 + 3 + 2) * SIZE * sizeof[Scalar[dtype]]()
-        print("Total size:", theoretical_data_size * 1e-6, "MB")
-        print("Average run time:", total_elapsed / 1e9 / num_runs, "s")
-        print("Effective memory bandwidth:", theoretical_data_size * num_runs / total_elapsed, "GB/s")
+        print("Array size:", SIZE * sizeof[Scalar[dtype]]() * 1e-6, "MB")
+        print("Total size:", 3 * SIZE * sizeof[Scalar[dtype]]() * 1e-6, "MB")
 
-        # h_out = ctx.enqueue_create_host_buffer[dtype](1).enqueue_fill(0)
-        # ctx.enqueue_copy(dst_buf=h_out, src_buf=d_sum)
-        # ctx.synchronize()
-        # print("result =", h_out)
+        for i in range (5):
+            print(kernel_names[i], ":")
+            print("   Min (sec):", kernel_timings[i][1:].min() * 1e-9)
+            print("   Max (sec):", kernel_timings[i][1:].max() * 1e-9)
+            print("   Avg (sec):", kernel_timings[i][1:].mean() * 1e-9)
+            print("   Bandwidth (GB/s):", kernel_data[i] / kernel_timings[i][1:].min())
