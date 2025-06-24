@@ -20,6 +20,7 @@ alias initA: Scalar[dtype] = 0.1
 alias initB: Scalar[dtype] = 0.2
 alias initC: Scalar[dtype] = 0.0
 alias startScalar: Scalar[dtype] = 0.4
+alias DOT_READ_DWORDS_PER_LANE = 4
 
 fn init_kernel(
     a: UnsafePointer[Scalar[dtype]],
@@ -69,32 +70,30 @@ fn triad_kernel(
 fn dot_kernel[size: Int](
     a: UnsafePointer[Scalar[dtype]],
     b: UnsafePointer[Scalar[dtype]],
-    output: UnsafePointer[Scalar[dtype]],
+    sums: UnsafePointer[Scalar[dtype]],
 ):
     var tb_sum = stack_allocation[
         TBSize,
         Scalar[dtype],
         address_space = AddressSpace.SHARED,
     ]()
-    var global_tid = block_dim.x * block_idx.x + thread_idx.x
+    var i = block_dim.x * block_idx.x + thread_idx.x
     var local_tid = thread_idx.x
-    threads_in_grid = TBSize * grid_dim.x
-    sum: Scalar[dtype] = 0
 
-    for i in range(global_tid, size, threads_in_grid):
-        sum += a[i] * b[i]
-    tb_sum[local_tid] = sum
-    barrier()
+    threads_in_grid = block_dim.x * grid_dim.x
+    while i < SIZE:
+        tb_sum[local_tid] += a[i] * b[i]
+        i += threads_in_grid
 
     var offset = block_dim.x // 2
     while offset > 0:
+        barrier()
         if local_tid < offset:
             tb_sum[local_tid] += tb_sum[local_tid + offset]
-        barrier()
         offset //= 2
 
     if local_tid == 0:
-        _ =  Atomic.fetch_add(output, tb_sum[0])
+        sums[block_idx.x] = tb_sum[local_tid]
 
 def main():
     np = Python.import_module("numpy")
@@ -107,11 +106,21 @@ def main():
         d_a = ctx.enqueue_create_buffer[dtype](SIZE)
         d_b = ctx.enqueue_create_buffer[dtype](SIZE)
         d_c = ctx.enqueue_create_buffer[dtype](SIZE)
-        d_sum = ctx.enqueue_create_buffer[dtype](1).enqueue_fill(0)
         a_ptr = d_a.unsafe_ptr()
         b_ptr = d_b.unsafe_ptr()
         c_ptr = d_c.unsafe_ptr()
-        out_ptr = d_sum.unsafe_ptr()
+
+        # Compute number of blocks for dot kernel
+        var dot_elements_per_lane = 1
+        if not DOT_READ_DWORDS_PER_LANE * sizeof[UInt]() < sizeof[Scalar[dtype]]():
+            dot_elements_per_lane = DOT_READ_DWORDS_PER_LANE * sizeof[UInt]() // sizeof[Scalar[dtype]]()
+
+        # Round dot_num_blocks up to next multiple of (TBSIZE * dot_elements_per_lane)
+        var dot_num_blocks = ceildiv(SIZE, (TBSize * dot_elements_per_lane))
+
+        # Array of partial sums for dor kernel
+        sums = ctx.enqueue_create_host_buffer[dtype](dot_num_blocks)
+        sums_ptr = sums.unsafe_ptr()
 
         # Initialize a, b, c
         ctx.enqueue_function[init_kernel](
@@ -123,7 +132,6 @@ def main():
         ctx.synchronize()
 
         # Timing:
-        # total_elapsed: UInt = 0
         kernel_timings = np.zeros(Python.tuple(5, num_runs), dtype="float32")
 
         for i in range(num_runs):
@@ -174,11 +182,14 @@ def main():
                 # Test dot:
                 start = monotonic()
                 ctx.enqueue_function[dot_kernel[SIZE]](
-                    a_ptr, b_ptr, out_ptr,
-                    grid_dim = (ceildiv(SIZE, TBSize)),
+                    a_ptr, b_ptr, sums_ptr,
+                    grid_dim = dot_num_blocks,
                     block_dim = TBSize
                 )
                 ctx.synchronize()
+                sum: Scalar[dtype] = 0
+                for i in range (dot_num_blocks):
+                    sum += sums[i]
                 end = monotonic()
                 kernel_timings[4][i] = Float32(end - start)
 
