@@ -1,0 +1,28 @@
+GPU: AMD Instinct MI300A
+Array size: 268.435456 MB
+Total size: 805.306368 MB
+Copy :
+   Min (sec): 0.000140472
+   Max (sec): 0.000161422
+   Avg (sec): 0.0001454899
+   Bandwidth (GB/s): 3821.907
+Mul :
+   Min (sec): 0.00014560099
+   Max (sec): 0.000160361
+   Avg (sec): 0.00015052174
+   Bandwidth (GB/s): 3687.275
+Add :
+   Min (sec): 0.000233712
+   Max (sec): 0.000260083
+   Avg (sec): 0.00023925207
+   Bandwidth (GB/s): 3445.7212
+Triad :
+   Min (sec): 0.00022737299
+   Max (sec): 0.000238253
+   Avg (sec): 0.00023146984
+   Bandwidth (GB/s): 3541.7854
+Dot :
+   Min (sec): 0.000162332
+   Max (sec): 0.000176672
+   Avg (sec): 0.00016664756
+   Bandwidth (GB/s): 3307.2402

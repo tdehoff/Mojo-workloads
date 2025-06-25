@@ -1,0 +1,86 @@
+GPU: NVIDIA H100 NVL
+Array size: 268.435456 MB
+Total size: 805.306368 MB
+Copy :
+   Min (sec): 0.000174121
+   Max (sec): 0.000181862
+   Avg (sec): 0.00017543834
+   Bandwidth (GB/s): 3083.3208
+Mul :
+   Min (sec): 0.00017806099
+   Max (sec): 0.00018386099
+   Avg (sec): 0.0001793187
+   Bandwidth (GB/s): 3015.0955
+Add :
+   Min (sec): 0.00023985199
+   Max (sec): 0.00024375199
+   Avg (sec): 0.00024092032
+   Bandwidth (GB/s): 3357.5137
+Triad :
+   Min (sec): 0.000238421
+   Max (sec): 0.000243112
+   Avg (sec): 0.00023969235
+   Bandwidth (GB/s): 3377.6655
+Dot :
+   Min (sec): 0.000227352
+   Max (sec): 0.000248062
+   Avg (sec): 0.00024017997
+   Bandwidth (GB/s): 2361.4084
+
+GPU: NVIDIA H100 NVL
+Array size: 268.435456 MB
+Total size: 805.306368 MB
+Copy :
+   Min (sec): 0.000174381
+   Max (sec): 0.000178491
+   Avg (sec): 0.00017547394
+   Bandwidth (GB/s): 3078.7236
+Mul :
+   Min (sec): 0.000178041
+   Max (sec): 0.00018186099
+   Avg (sec): 0.00017936269
+   Bandwidth (GB/s): 3015.434
+Add :
+   Min (sec): 0.000239711
+   Max (sec): 0.000278802
+   Avg (sec): 0.00024151178
+   Bandwidth (GB/s): 3359.4885
+Triad :
+   Min (sec): 0.00023843099
+   Max (sec): 0.00024332199
+   Avg (sec): 0.0002397338
+   Bandwidth (GB/s): 3377.5237
+Dot :
+   Min (sec): 0.000228701
+   Max (sec): 0.000270511
+   Avg (sec): 0.00023959225
+   Bandwidth (GB/s): 2347.4795
+
+GPU: NVIDIA H100 NVL
+Array size: 268.435456 MB
+Total size: 805.306368 MB
+Copy :
+   Min (sec): 0.000174061
+   Max (sec): 0.000189381
+   Avg (sec): 0.00017573108
+   Bandwidth (GB/s): 3084.3838
+Mul :
+   Min (sec): 0.000177991
+   Max (sec): 0.00019798099
+   Avg (sec): 0.0001795899
+   Bandwidth (GB/s): 3016.2812
+Add :
+   Min (sec): 0.000239972
+   Max (sec): 0.000273691
+   Avg (sec): 0.00024191428
+   Bandwidth (GB/s): 3355.8347
+Triad :
+   Min (sec): 0.000238522
+   Max (sec): 0.000257682
+   Avg (sec): 0.00024008896
+   Bandwidth (GB/s): 3376.235
+Dot :
+   Min (sec): 0.00022510199
+   Max (sec): 0.000257632
+   Avg (sec): 0.00024015243
+   Bandwidth (GB/s): 2385.0117

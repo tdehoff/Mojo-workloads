@@ -1,0 +1,58 @@
+BabelStream
+Version: 5.0
+Implementation: HIP
+Running kernels 100 times
+Precision: double
+Array size: 268.4 MB (=0.3 GB)
+Total size: 805.3 MB (=0.8 GB)
+Using HIP device AMD Instinct MI300A
+Driver: 60443482
+Memory: DEFAULT
+Init: 0.070246 s (=11464.122712 MBytes/sec)
+Read: 0.274179 s (=2937.160068 MBytes/sec)
+Function    MBytes/sec  Min (sec)   Max         Average
+Copy        3833122.083 0.00014     0.00016     0.00015
+Mul         3690570.024 0.00015     0.00016     0.00015
+Add         3455019.748 0.00023     0.00025     0.00024
+Triad       3538206.298 0.00023     0.00024     0.00023
+Dot         2946731.536 0.00018     0.00020     0.00019
+
+roc-6.4.0
+
+BabelStream
+Version: 5.0
+Implementation: HIP
+Running kernels 100 times
+Precision: double
+Array size: 268.4 MB (=0.3 GB)
+Total size: 805.3 MB (=0.8 GB)
+Using HIP device AMD Instinct MI300A
+Driver: 60443482
+Memory: DEFAULT
+Init: 0.063865 s (=12609.415218 MBytes/sec)
+Read: 0.290878 s (=2768.534462 MBytes/sec)
+Function    MBytes/sec  Min (sec)   Max         Average
+Copy        3766933.610 0.00014     0.00017     0.00015
+Mul         3723305.814 0.00014     0.00016     0.00015
+Add         3484786.873 0.00023     0.00025     0.00024
+Triad       3558861.810 0.00023     0.00024     0.00023
+Dot         2965121.958 0.00018     0.00019     0.00019
+
+BabelStream
+Version: 5.0
+Implementation: HIP
+Running kernels 100 times
+Precision: double
+Array size: 268.4 MB (=0.3 GB)
+Total size: 805.3 MB (=0.8 GB)
+Using HIP device AMD Instinct MI300A
+Driver: 60443482
+Memory: DEFAULT
+Init: 0.065012 s (=12387.123259 MBytes/sec)
+Read: 0.290204 s (=2774.964839 MBytes/sec)
+Function    MBytes/sec  Min (sec)   Max         Average
+Copy        3730809.245 0.00014     0.00018     0.00015
+Mul         3681686.659 0.00015     0.00017     0.00015
+Add         3431771.518 0.00023     0.00025     0.00024
+Triad       3500068.966 0.00023     0.00025     0.00024
+Dot         2908891.928 0.00018     0.00022     0.00019

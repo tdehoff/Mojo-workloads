@@ -136,62 +136,62 @@ def main():
 
         for i in range(num_runs):
             # Test copy:
-                start = monotonic()
-                ctx.enqueue_function[copy_kernel](
-                    a_ptr, b_ptr,
-                    grid_dim = (ceildiv(SIZE, TBSize)),
-                    block_dim = TBSize
-                )
-                ctx.synchronize()
-                end = monotonic()
-                kernel_timings[0][i] = Float32(end - start)
+            start = monotonic()
+            ctx.enqueue_function[copy_kernel](
+                a_ptr, b_ptr,
+                grid_dim = (ceildiv(SIZE, TBSize)),
+                block_dim = TBSize
+            )
+            ctx.synchronize()
+            end = monotonic()
+            kernel_timings[0][i] = Float32(end - start)
 
-                # Test mul:
-                start = monotonic()
-                ctx.enqueue_function[mul_kernel](
-                    b_ptr, c_ptr, startScalar,
-                    grid_dim = (ceildiv(SIZE, TBSize)),
-                    block_dim = TBSize
-                )
-                ctx.synchronize()
-                end = monotonic()
-                kernel_timings[1][i] = Float32(end - start)
+            # Test mul:
+            start = monotonic()
+            ctx.enqueue_function[mul_kernel](
+                b_ptr, c_ptr, startScalar,
+                grid_dim = (ceildiv(SIZE, TBSize)),
+                block_dim = TBSize
+            )
+            ctx.synchronize()
+            end = monotonic()
+            kernel_timings[1][i] = Float32(end - start)
 
-                # Test add:
-                start = monotonic()
-                ctx.enqueue_function[add_kernel](
-                    a_ptr, b_ptr, c_ptr,
-                    grid_dim = (ceildiv(SIZE, TBSize)),
-                    block_dim = TBSize
-                )
-                ctx.synchronize()
-                end = monotonic()
-                kernel_timings[2][i] = Float32(end - start)
+            # Test add:
+            start = monotonic()
+            ctx.enqueue_function[add_kernel](
+                a_ptr, b_ptr, c_ptr,
+                grid_dim = (ceildiv(SIZE, TBSize)),
+                block_dim = TBSize
+            )
+            ctx.synchronize()
+            end = monotonic()
+            kernel_timings[2][i] = Float32(end - start)
 
-                # Test triad:
-                start = monotonic()
-                ctx.enqueue_function[triad_kernel](
-                    a_ptr, b_ptr, c_ptr, startScalar,
-                    grid_dim = (ceildiv(SIZE, TBSize)),
-                    block_dim = TBSize
-                )
-                ctx.synchronize()
-                end = monotonic()
-                kernel_timings[3][i] = Float32(end - start)
+            # Test triad:
+            start = monotonic()
+            ctx.enqueue_function[triad_kernel](
+                a_ptr, b_ptr, c_ptr, startScalar,
+                grid_dim = (ceildiv(SIZE, TBSize)),
+                block_dim = TBSize
+            )
+            ctx.synchronize()
+            end = monotonic()
+            kernel_timings[3][i] = Float32(end - start)
 
-                # Test dot:
-                start = monotonic()
-                ctx.enqueue_function[dot_kernel[SIZE]](
-                    a_ptr, b_ptr, sums_ptr,
-                    grid_dim = dot_num_blocks,
-                    block_dim = TBSize
-                )
-                ctx.synchronize()
-                sum: Scalar[dtype] = 0
-                for i in range (dot_num_blocks):
-                    sum += sums[i]
-                end = monotonic()
-                kernel_timings[4][i] = Float32(end - start)
+            # Test dot:
+            start = monotonic()
+            ctx.enqueue_function[dot_kernel[SIZE]](
+                a_ptr, b_ptr, sums_ptr,
+                grid_dim = dot_num_blocks,
+                block_dim = TBSize
+            )
+            ctx.synchronize()
+            sum: Scalar[dtype] = 0
+            for i in range (dot_num_blocks):
+                sum += sums[i]
+            end = monotonic()
+            kernel_timings[4][i] = Float32(end - start)
 
 
         kernel_names = ["Copy", "Mul", "Add", "Triad", "Dot"]
