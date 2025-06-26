@@ -1,13 +1,11 @@
-from gpu.host import DeviceContext
 from sys import has_accelerator
-from gpu import block_dim, block_idx, thread_idx, grid_dim, barrier
 from sys.info import sizeof
+from gpu import block_dim, block_idx, thread_idx, grid_dim, barrier
+from gpu.host import DeviceContext
+from gpu.memory import AddressSpace, load
 from math import ceildiv
 from time import monotonic
-from sys import argv
 from memory import stack_allocation
-from os.atomic import Atomic
-from gpu.memory import AddressSpace, load
 from collections import List
 from python import Python
 
