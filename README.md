@@ -2,11 +2,12 @@
 ```
 curl -fsSL https://pixi.sh/install.sh | sh
 ```
-* Activate the project's virtual environment:
+* Navigate to the workload directory and activate the virtual environment:
 ```
+cd <workload_directory>
 pixi shell
 ```
 * Run with:
 ```
-mojo laplacian.mojo
+mojo <workload>.mojo
 ```
