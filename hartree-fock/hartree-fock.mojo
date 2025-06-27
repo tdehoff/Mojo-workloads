@@ -3,7 +3,7 @@ from sys import has_accelerator
 from gpu.id import block_dim, block_idx, thread_idx
 from layout import Layout, LayoutTensor
 from sys.info import sizeof
-from math import ceildiv, exp, sqrt, erf, isqrt
+from math import ceildiv, exp, sqrt, erf
 from time import monotonic
 from os.atomic import Atomic
 
@@ -29,31 +29,31 @@ fn ssss(i: Int, j: Int, k: Int, l: Int, ngauss: Int,
             aij = 1.0 / (xpnt[ib] + xpnt[jb])
             dij = coef[ib] * coef[jb] *
                   exp(-xpnt[ib] * xpnt[jb] * aij *
-                      ((pow(geom[0, i] - geom[0, j], 2)) +
-                       (pow(geom[1, i] - geom[1, j], 2)) +
-                       (pow(geom[2, i] - geom[2, j], 2)))) * pow(aij, 1.5)
+                      ((pow(geom[i, 0] - geom[j, 0], 2)) +
+                       (pow(geom[i, 1] - geom[j, 1], 2)) +
+                       (pow(geom[i, 2] - geom[j, 2], 2)))) * pow(aij, 1.5)
 
             if abs(dij) > dtol:
-                xij = aij * (xpnt[ib] * geom[0, i] + xpnt[jb] * geom[1, j])
-                yij = aij * (xpnt[ib] * geom[1, i] + xpnt[jb] * geom[2, j])
-                zij = aij * (xpnt[ib] * geom[2, i] + xpnt[jb] * geom[2, j])
+                xij = aij * (xpnt[ib] * geom[i, 0] + xpnt[jb] * geom[j, 0])
+                yij = aij * (xpnt[ib] * geom[i, 1] + xpnt[jb] * geom[j, 1])
+                zij = aij * (xpnt[ib] * geom[i, 2] + xpnt[jb] * geom[j, 2])
 
                 for kb in range(ngauss):
                     for lb in range(ngauss):
                         akl = 1.0 / (xpnt[kb] + xpnt[lb])
                         dkl = dij * coef[kb] * coef[lb] *
                               exp(-xpnt[kb] * xpnt[lb] * akl *
-                              ((pow(geom[0, k] - geom[0, l], 2)) +
-                               (pow(geom[1, k] - geom[1, l], 2)) +
-                               (pow(geom[2, k] - geom[2, l], 2)))) * pow(akl, 1.5)
+                              ((pow(geom[k, 0] - geom[l, 0], 2)) +
+                               (pow(geom[k, 1] - geom[l, 1], 2)) +
+                               (pow(geom[k, 2] - geom[l, 2], 2)))) * pow(akl, 1.5)
 
                         if abs(dkl) > dtol:
                             aijkl = (xpnt[ib] + xpnt[jb]) *
                                     (xpnt[kb] + xpnt[lb]) /
                                     (xpnt[ib] + xpnt[jb] + xpnt[kb] + xpnt[lb])
-                            tt = aijkl * (pow(xij - akl * (xpnt[kb] * geom[0, k] + xpnt[lb] * geom[0, l]), 2)
-                                          + pow(yij - akl * (xpnt[kb] * geom[1, k] + xpnt[lb] * geom[1, l]), 2)
-                                          + pow(zij - akl * (xpnt[kb] * geom[2, k] + xpnt[lb] * geom[2, l]), 2))
+                            tt = aijkl * (pow(xij - akl * (xpnt[kb] * geom[k, 0] + xpnt[lb] * geom[l, 0]), 2)
+                                          + pow(yij - akl * (xpnt[kb] * geom[k, 1] + xpnt[lb] * geom[l, 1]), 2)
+                                          + pow(zij - akl * (xpnt[kb] * geom[k, 2] + xpnt[lb] * geom[l, 2]), 2))
                             f0t = sqrtpi2
                             if tt > rcut:
                                 f0t = (pow(tt, -0.5)[0]) * (erf(sqrt(tt))[0])
@@ -67,24 +67,25 @@ fn hartree_fock_kernel(ngauss: Int, schwarz: UnsafePointer[Float64],
                        fock: LayoutTensor[mut=True, dtype, layout]):
     var ijkl = block_idx.x * block_dim.x + thread_idx.x
     var ij = sqrt(2 * ijkl)
-    var n: Float64 = (Float64)(ij * ij + ij) / 2
+    var n: Float64 = (ij * ij + ij) / 2.0
+
     while n < ijkl:
         ij += 1
-        n = (Float64)(ij * ij + ij) / 2
+        n = (ij * ij + ij) / 2.0
     var kl = ijkl - (ij * ij - ij) // 2
     if schwarz[ij] * schwarz[kl] > dtol:
         var i = sqrt(2 * ij) - 1
-        n = (Float64)(i * i + i) / 2
+        n = (i * i + i) / 2.0
         while n < ij:
             i += 1
-            n = (Float64)(i * i + i) / 2
+            n = (i * i + i) / 2.0
         var j = ij - (i * i - i) // 2
 
         var k = sqrt(2 * kl)
-        n = (k * k + k) / 2
+        n = (k * k + k) / 2.0
         while n < kl:
             k += 1
-            n = (k * k + k) / 2
+            n = (k * k + k) / 2.0
         var l = kl - (k * k - k) // 2
         i -= 1
         j -= 1
@@ -96,46 +97,41 @@ fn hartree_fock_kernel(ngauss: Int, schwarz: UnsafePointer[Float64],
             for jb in range(ngauss):
                 var aij: Float64 = 1.0 / (xpnt[ib] + xpnt[jb])
                 var dij: Float64 = coef[ib] * coef[jb] * (Float64)(exp(-xpnt[ib] * xpnt[jb] * aij *
-                                       (pow(geom[0, i] - geom[0, j], 2) +
-                                        pow(geom[1, i] - geom[1, j], 2) +
-                                        pow(geom[2, i] - geom[2, j], 2)))) * pow(aij, 1.5)
-                # print("aij =", aij, "dij =", dij)
+                                                          (pow(geom[i, 0] - geom[j, 0], 2) +
+                                                           pow(geom[i, 1] - geom[j, 1], 2) +
+                                                           pow(geom[i, 2] - geom[j, 2], 2)))) * pow(aij, 1.5)
+
                 if abs(dij) > dtol:
-                    xij = aij * (xpnt[ib] * geom[0, i] + xpnt[jb] * geom[0, j])
-                    yij = aij * (xpnt[ib] * geom[1, i] + xpnt[jb] * geom[1, j])
-                    zij = aij * (xpnt[ib] * geom[2, i] + xpnt[jb] * geom[2, j])
+                    xij = aij * (xpnt[ib] * geom[i, 0] + xpnt[jb] * geom[j, 0])
+                    yij = aij * (xpnt[ib] * geom[i, 1] + xpnt[jb] * geom[j, 1])
+                    zij = aij * (xpnt[ib] * geom[i, 2] + xpnt[jb] * geom[j, 2])
+
                     for kb in range(ngauss):
                         for lb in range(ngauss):
                             akl = 1.0 / (xpnt[kb] + xpnt[lb])
                             dkl = dij * coef[kb] * coef[lb] *
                                   exp(-xpnt[kb] * xpnt[lb] * akl *
-                                  (pow(geom[0, k] - geom[0, l], 2) +
-                                   pow(geom[1, k] - geom[1, l], 2) +
-                                   pow(geom[2, k] - geom[2, l], 2))) * pow(akl, 1.5)
+                                  (pow(geom[k, 0] - geom[l, 0], 2) +
+                                   pow(geom[k, 1] - geom[l, 1], 2) +
+                                   pow(geom[k, 2] - geom[l, 2], 2))) * pow(akl, 1.5)
                             if abs(dkl) > dtol:
                                 aijkl = (xpnt[ib] + xpnt[jb]) *
                                         (xpnt[kb] + xpnt[lb]) /
                                         (xpnt[ib] + xpnt[jb] + xpnt[kb] + xpnt[lb])
-                                tt = aijkl * (pow(xij - akl * (xpnt[kb] * geom[0, k] + xpnt[lb] * geom[0, l]), 2)
-                                               + pow(yij - akl * (xpnt[kb] * geom[1, k] + xpnt[lb] * geom[1, l]), 2)
-                                               + pow(zij - akl * (xpnt[kb] * geom[2, k] + xpnt[lb] * geom[2, l]), 2))
-                                # print("-> thread", ijkl, "tt =", tt, "aijkl =", aijkl)
+                                tt = aijkl * (pow(xij - akl * (xpnt[kb] * geom[k, 0] + xpnt[lb] * geom[l, 0]), 2)
+                                               + pow(yij - akl * (xpnt[kb] * geom[k, 1] + xpnt[lb] * geom[l, 1]), 2)
+                                               + pow(zij - akl * (xpnt[kb] * geom[k, 2] + xpnt[lb] * geom[l, 2]), 2))
                                 f0t = sqrtpi2
                                 if tt > rcut:
                                     f0t = Float64(pow(tt, -0.5) * erf(pow(tt, 0.5)))
-                                    # print("THREAD", ijkl,"pow(tt, -0.5) =", pow(tt, -0.5), "erf(pow(tt, 0.5))", erf(pow(tt, 0.5)), "f0t =", f0t)
                                 eri += Float64(dkl * f0t * pow(aijkl, 0.5))
 
-                                if ijkl == 1:
-                                    print("eri =", eri)
         if i == j:
             eri *= 0.5
         if k == l:
             eri *= 0.5
         if i == k and j == l:
             eri *= 0.5
-
-        print("thread", ijkl, "eri =", eri)
 
         _ = Atomic.fetch_add(fock.ptr.offset(i * natoms + j),
                              rebind[Scalar[dtype]](dens[k, l] * eri * 4.0))
@@ -194,6 +190,7 @@ def main():
                 eri = ssss(i, j, i, j, ngauss, xpnt.unsafe_ptr(), coef.unsafe_ptr(), geom_tensor)
                 schwarz[ij] = sqrt(abs(eri))
 
+        print("eri =", eri)
         d_geom = ctx.enqueue_create_buffer[dtype](natoms * ngauss)
         ctx.enqueue_copy(dst_buf=d_geom, src_buf=geom)
         d_geom_tensor = LayoutTensor[dtype, geom_layout](d_geom)
