@@ -8,4 +8,4 @@ version = "0.1.0"
 [tasks]
 
 [dependencies]
-modular = ">=25.4.0.dev2025061205,<26"
+modular = ">=25.5.0.dev2025070105,<26"

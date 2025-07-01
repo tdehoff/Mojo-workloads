@@ -6,12 +6,14 @@ from sys.info import sizeof
 from math import ceildiv
 from time import monotonic
 from sys import argv
+from python import Python
 
 alias precision = Float64
 alias dtype = DType.float64
 alias L = 1024
-alias steps = 100
+alias num_iter = 1000
 alias layout = Layout.col_major(L, L, L)
+alias TBSize = 256
 
 fn laplacian_kernel(
     f: LayoutTensor[dtype, layout, MutableAnyOrigin],
@@ -62,7 +64,7 @@ fn test_function_kernel(
 
 def main():
     args = argv()
-    BLK_X: Int = 1024
+    BLK_X: Int = TBSize
     BLK_Y: Int = 1
     BLK_Z: Int = 1
     i = 0
@@ -121,7 +123,7 @@ def main():
         # Timing:
         total_elapsed: UInt = 0
 
-        for _ in range(steps):
+        for _ in range(num_iter):
             start = monotonic()
             ctx.enqueue_function[laplacian_kernel](
                 f_tensor, u_tensor, nx, ny, nz,
@@ -140,8 +142,8 @@ def main():
         print("Theoretical fetch size (GB):", theoretical_fetch_size * 1e-9)
         print("Theoretical fetch size (GB):", theoretical_write_size * 1e-9)
         datasize = theoretical_fetch_size + theoretical_write_size
-        print("Average kernel time:", total_elapsed / 1e9 / steps, "s")
-        print("Effective memory bandwidth:", datasize* 1e-9 * steps / (total_elapsed / 1e9), "GB/s")
+        print("Average kernel time:", total_elapsed / 1e9 / num_iter, "s")
+        print("Effective memory bandwidth:", datasize* 1e-9 * num_iter / (total_elapsed / 1e9), "GB/s")
 
         # # Copy result to host
         # h_f = ctx.enqueue_create_host_buffer[dtype](nx * ny * nz)
