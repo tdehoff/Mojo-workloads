@@ -8,7 +8,7 @@ from gpu.host import DeviceContext
 from gpu.id import block_dim, block_idx, thread_idx
 from layout import Layout, LayoutTensor
 
-alias L = 512
+alias L = 1024
 alias num_iter = 1000
 alias TBSize = 256
 
@@ -94,6 +94,8 @@ def main():
 
         ctx = DeviceContext()
         print("GPU:", ctx.name())
+        print("Driver:", ctx.get_api_version())
+
         d_u = ctx.enqueue_create_buffer[dtype](nx * ny * nz)
         d_f = ctx.enqueue_create_buffer[dtype](nx * ny * nz)
         u_tensor = LayoutTensor[dtype, layout](d_u)
