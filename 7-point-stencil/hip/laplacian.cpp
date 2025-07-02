@@ -46,9 +46,10 @@ https://github.com/amd/amd-lab-notes/blob/release/finite-difference/examples/ker
 using precision = double;
 using namespace std;
 
-const uint32_t TBSize = 1024;
-const uint32_t L = 256;
+const uint32_t TBSize = 256;
+const uint32_t L = 512;
 const uint32_t NUM_ITER = 1000;
+bool verbose = true;
 
 // HIP error check
 #define HIP_CHECK(stat)                                           \
@@ -97,55 +98,6 @@ void test_function(T *d_f, int nx, int ny, int nz, T hx, T hy, T hz) {
     HIP_CHECK( hipGetLastError() );
 }
 
-
-template <typename T>
-__global__ void check_kernel(int *error, const T *f,
-                             int nx, int ny, int nz,
-                             T hx, T hy, T hz,
-                             double tolerance) {
-
-    int i = threadIdx.x + blockIdx.x * blockDim.x;
-    int j = threadIdx.y + blockIdx.y * blockDim.y;
-    int k = threadIdx.z + blockIdx.z * blockDim.z;
-
-    // Exit if this thread is on the boundary
-    if (i == 0 || i >= nx - 1 ||
-        j == 0 || j >= ny - 1 ||
-        k == 0 || k >= nz - 1)
-        return;
-
-    size_t pos = i + nx * (j + ny * k);
-
-    // If the pointwise error exceeds the tolerance, we signal that an error has occurred
-
-    // Laplacian of u when u is initialized using `test_function_kernel`
-    T expected_f = 3;
-    if ( fabs(f[pos] - expected_f) / expected_f > tolerance) {
-        atomicAdd(error, 1);
-    }
-}
-
-
-template <typename T>
-int check(T *d_f, int nx, int ny, int nz, T hx, T hy, T hz, T tolerance=1e-6) {
-
-    dim3 block(TBSize, 1);
-    dim3 grid((nx - 1) / block.x + 1, ny, nz);
-
-    int *d_error;
-    HIP_CHECK( hipMalloc(&d_error, sizeof(int))   );
-    HIP_CHECK( hipMemset(d_error, 0, sizeof(int)) );
-    check_kernel<<<grid, block>>>(d_error, d_f, nx, ny, nz, hx, hy, hz, tolerance);
-    HIP_CHECK( hipGetLastError() );
-    int *error = new int[1];
-    error[0] = 1;
-    HIP_CHECK( hipMemcpy(error, d_error, sizeof(int), hipMemcpyDeviceToHost) );
-    int out = error[0];
-    delete[] error;
-
-    return out;
-}
-
 int main(int argc, char **argv)
 {
     // Default thread block sizes
@@ -158,35 +110,17 @@ int main(int argc, char **argv)
 
     precision tolerance = 3e-6;
 
-    // int num_iter = 1000;
-
-    // if (argc > 1) nx = atoi(argv[1]);
-    // if (argc > 2) ny = atoi(argv[2]);
-    // if (argc > 3) nz = atoi(argv[3]);
-    if (argc > 1) BLK_X = atoi(argv[1]);
-    if (argc > 2) BLK_Y = atoi(argv[2]);
-    if (argc > 3) BLK_Z = atoi(argv[3]);
-
-    // #ifndef LB
-    // #define LB 1024
-    // #endif
-    //     if (BLK_X * BLK_Y * BLK_Z > LB) {
-    //         cout << "WARNING: input thread block size " << BLK_X <<"*" << BLK_Y << "*" << BLK_Z;
-    //         cout << " exceeds limit " << LB << ", resetting to " << LB << "*1*1" << endl;
-    //         BLK_X = LB;
-    //         BLK_Y = 1;
-    //         BLK_Z = 1;
-    //     }
-    //     cout << "Kernel: " << KERNEL << endl;
-    // #ifdef m
-    //     cout << "Tiling factor: " << m << endl;
-    //     assert((ny % (BLK_Y * m) == 0) && "Grid size ny must be divisible by product of BLK_Y and tiling factor");
-    // #endif
+    if (argc > 1) nx = atoi(argv[1]);
+    if (argc > 2) ny = atoi(argv[2]);
+    if (argc > 3) nz = atoi(argv[3]);
+    if (argc > 4) BLK_X = atoi(argv[4]);
+    if (argc > 5) BLK_Y = atoi(argv[5]);
+    if (argc > 6) BLK_Z = atoi(argv[6]);
 
     cout << "Precision: double" << endl;
 
-    cout << "nx,ny,nz = " << L << ", " << L << ", " << L << endl;
-    cout << "block sizes = " << TBSize << ", " << 1 << ", " << 1 << endl;
+    cout << "nx,ny,nz = " << nx << ", " << ny << ", " << nz << endl;
+    cout << "block sizes = " << BLK_X << ", " << BLK_Y << ", " << BLK_Z << endl;
 
     // Theoretical fetch and write sizes:
     size_t theoretical_fetch_size = (nx * ny * nz - 8 - 4 * (nx - 2) - 4 * (ny - 2) - 4 * (nz - 2) ) * sizeof(precision);
@@ -210,13 +144,7 @@ int main(int argc, char **argv)
     test_function(d_u, nx, ny, nz, hx, hy, hz);
 
     // Compute Laplacian (1/2) (x(x-1) + y(y-1) + z(z-1)) = 3 for all interior points
-    // laplacian(d_f, d_u, nx, ny, nz, BLK_X, BLK_Y, BLK_Z, hx, hy, hz);
-    laplacian(d_f, d_u, L, L, L, BLK_X, BLK_Y, BLK_Z, hx, hy, hz);
-
-    // Verification
-    int error = check(d_f, nx, ny, nz, hx, hy, hz, tolerance);
-    if (error)
-        cout << "Correctness test failed. Pointwise error larger than " << tolerance << endl;
+    laplacian(d_f, d_u, nx, ny, nz, BLK_X, BLK_Y, BLK_Z, hx, hy, hz);
 
     // Timing
     float total_elapsed = 0;
@@ -225,16 +153,22 @@ int main(int argc, char **argv)
     HIP_CHECK( hipEventCreate(&start) );
     HIP_CHECK( hipEventCreate(&stop)  );
 
+    if (verbose) {
+        cout << "Kernel execution times (ms):" << endl;
+    }
+
     for (int iter = 0; iter < NUM_ITER; ++iter) {
         // Flush cache
         HIP_CHECK( hipDeviceSynchronize()                     );
         HIP_CHECK( hipEventRecord(start)                      );
-        // laplacian(d_f, d_u, nx, ny, nz, BLK_X, BLK_Y, BLK_Z, hx, hy, hz);
-        laplacian(d_f, d_u, L, L, L, BLK_X, BLK_Y, BLK_Z, hx, hy, hz);
+        laplacian(d_f, d_u, nx, ny, nz, BLK_X, BLK_Y, BLK_Z, hx, hy, hz);
         HIP_CHECK( hipGetLastError()                          );
         HIP_CHECK( hipEventRecord(stop)                       );
         HIP_CHECK( hipEventSynchronize(stop)                  );
         HIP_CHECK( hipEventElapsedTime(&elapsed, start, stop) );
+        if (verbose) {
+            printf("%f\n", elapsed);
+        }
         total_elapsed += elapsed;
     }
 

@@ -1,23 +1,24 @@
-from gpu.host import DeviceContext
-from sys import has_accelerator
-from gpu.id import block_dim, block_idx, thread_idx
-from layout import Layout, LayoutTensor
+from sys import argv, has_accelerator
 from sys.info import sizeof
 from math import ceildiv
 from time import monotonic
-from sys import argv
-from python import Python
+from os.atomic import Atomic
+
+from gpu.host import DeviceContext
+from gpu.id import block_dim, block_idx, thread_idx
+from layout import Layout, LayoutTensor
+
+alias L = 512
+alias num_iter = 1000
+alias TBSize = 256
 
 alias precision = Float64
 alias dtype = DType.float64
-alias L = 1024
-alias num_iter = 1000
-alias layout = Layout.col_major(L, L, L)
-alias TBSize = 256
+alias layout = Layout.row_major(L, L, L)
 
 fn laplacian_kernel(
-    f: LayoutTensor[dtype, layout, MutableAnyOrigin],
-    u: LayoutTensor[dtype, layout, MutableAnyOrigin],
+    f: LayoutTensor[mut=True, dtype, layout],
+    u: LayoutTensor[mut=False, dtype, layout],
     nx: Int,
     ny: Int,
     nz: Int,
@@ -30,16 +31,16 @@ fn laplacian_kernel(
     var j = thread_idx.y + block_idx.y * block_dim.y
     var k = thread_idx.z + block_idx.z * block_dim.z
 
-    if i >= 1 and i < nx-1 and
-       j >= 1 and j < ny-1 and
-       k >= 1 and k < nz-1:
-        f[i, j, k] = u[i, j, k] * invhxyz2
-               + (u[i - 1, j    , k    ] + u[i + 1, j    , k    ]) * invhx2
-               + (u[i    , j - 1, k    ] + u[i    , j + 1, k    ]) * invhy2
-               + (u[i    , j    , k - 1] + u[i    , j    , k + 1]) * invhz2
+    if i > 0 and i < nx - 1 and
+       j > 0 and j < ny - 1 and
+       k > 0 and k < nz - 1:
+        f[j, k, i] = u[j, k, i] * invhxyz2
+               + (u[j - 1, k    , i    ] + u[j + 1, k    , i    ]) * invhx2
+               + (u[j    , k - 1, i    ] + u[j    , k + 1, i    ]) * invhy2
+               + (u[j    , k    , i - 1] + u[j    , k    , i + 1]) * invhz2
 
 fn test_function_kernel(
-    u: LayoutTensor[dtype, layout, MutableAnyOrigin],
+    u: LayoutTensor[mut=True, dtype, layout],
     nx: Int,
     ny: Int,
     nz: Int,
@@ -60,13 +61,15 @@ fn test_function_kernel(
         Lx: precision = nx * hx
         Ly: precision = ny * hy
         Lz: precision = nz * hz
-        u[i, j, k] = c * x * (x - Lx) + c * y * (y - Ly) + c * z * (z - Lz)
+        u[j, i, k] = c * x * (x - Lx) + c * y * (y - Ly) + c * z * (z - Lz)
 
 def main():
     args = argv()
     BLK_X: Int = TBSize
     BLK_Y: Int = 1
     BLK_Z: Int = 1
+    verbose: Int = 0
+
     i = 0
     while i < len(args):
         arg = args[i]
@@ -75,6 +78,8 @@ def main():
             BLK_Y = args[i + 2].__int__()
             BLK_Z = args[i + 3].__int__()
             i += 3
+        if arg == "--verbose" and i + 1 < len(args):
+            verbose = args[i + 1].__int__()
         i += 1
 
     @parameter
@@ -98,6 +103,7 @@ def main():
         hx = 1.0 / (nx - 1)
         hy = 1.0 / (ny - 1)
         hz = 1.0 / (nz - 1)
+
         # Initialize test function: 0.5 * (x * (x - 1) + y * (y - 1) + z * (z - 1))
         ctx.enqueue_function[test_function_kernel](
             u_tensor, nx, ny, nz, hx, hy, hz,
@@ -111,6 +117,7 @@ def main():
         invhy2 = 1.0 / hy / hy
         invhz2 = 1.0 / hz / hz
         invhxyz2 = -2.0 * (invhx2 + invhy2 + invhz2)
+
         # Warmup call
         ctx.enqueue_function[laplacian_kernel](
             f_tensor, u_tensor, nx, ny, nz,
@@ -122,6 +129,8 @@ def main():
 
         # Timing:
         total_elapsed: UInt = 0
+        if verbose > 0:
+            print("Kernel execution times (ms):")
 
         for _ in range(num_iter):
             start = monotonic()
@@ -133,7 +142,8 @@ def main():
             )
             ctx.synchronize()
             end = monotonic()
-            # print("Run took:", (end - start) / 1e9, "s")
+            if verbose > 0:
+                print((end - start) * 1e-6)
             total_elapsed += (end - start)
 
         # Effective memory bandwidth
@@ -142,11 +152,6 @@ def main():
         print("Theoretical fetch size (GB):", theoretical_fetch_size * 1e-9)
         print("Theoretical fetch size (GB):", theoretical_write_size * 1e-9)
         datasize = theoretical_fetch_size + theoretical_write_size
-        print("Average kernel time:", total_elapsed / 1e9 / num_iter, "s")
-        print("Effective memory bandwidth:", datasize* 1e-9 * num_iter / (total_elapsed / 1e9), "GB/s")
+        print("Average kernel time:", total_elapsed / 1e6 / num_iter, "ms")
+        print("Effective memory bandwidth:", datasize * num_iter / total_elapsed, "GB/s")
 
-        # # Copy result to host
-        # h_f = ctx.enqueue_create_host_buffer[dtype](nx * ny * nz)
-        # ctx.enqueue_copy(dst_buf=h_f, src_buf=d_f)
-        # ctx.synchronize()
-        # print("h_f:", h_f)
