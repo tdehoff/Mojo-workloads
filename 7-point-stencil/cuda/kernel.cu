@@ -13,10 +13,8 @@ __global__ void laplacian_kernel(T * f, const T * u, int nx, int ny, int nz, T i
         k == 0 || k >= nz - 1)
         return;
 
-    // const int slice = nx * ny;
-    // size_t pos = i + nx * j + slice * k;
-    const int slice = ny * nz;
-    size_t pos = k + nz * j + slice *i;
+    const int slice = nx * ny;
+    size_t pos = i + nx * j + slice * k;
 
     // Compute the result of the stencil operation
     f[pos] = u[pos] * invhxyz2

@@ -27,17 +27,17 @@ fn laplacian_kernel(
     invhz2: precision,
     invhxyz2: precision,
 ):
-    var i = thread_idx.x + block_idx.x * block_dim.x
+    var k = thread_idx.x + block_idx.x * block_dim.x
     var j = thread_idx.y + block_idx.y * block_dim.y
-    var k = thread_idx.z + block_idx.z * block_dim.z
+    var i = thread_idx.z + block_idx.z * block_dim.z
 
     if i > 0 and i < nx - 1 and
        j > 0 and j < ny - 1 and
        k > 0 and k < nz - 1:
-        f[j, k, i] = u[j, k, i] * invhxyz2
-               + (u[j - 1, k    , i    ] + u[j + 1, k    , i    ]) * invhx2
-               + (u[j    , k - 1, i    ] + u[j    , k + 1, i    ]) * invhy2
-               + (u[j    , k    , i - 1] + u[j    , k    , i + 1]) * invhz2
+        f[i, j, k] = u[i, j, k] * invhxyz2
+               + (u[i - 1, j    , k    ] + u[i + 1, j    , k    ]) * invhx2
+               + (u[i    , j - 1, k    ] + u[i    , j + 1, k    ]) * invhy2
+               + (u[i    , j    , k - 1] + u[i    , j    , k + 1]) * invhz2
 
 fn test_function_kernel(
     u: LayoutTensor[mut=True, dtype, layout],

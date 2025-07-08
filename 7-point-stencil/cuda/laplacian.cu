@@ -24,9 +24,9 @@ https://github.com/JuliaORNL/JACC-repro/tree/main/7-point-stencil/NVIDIA
 using precision = double;
 using namespace std;
 
-const uint32_t TBSize = 256;
-const uint32_t L = 512;
-const uint32_t NUM_ITER = 1000;
+const int TBSize = 256;
+const int L = 512;
+const int NUM_ITER = 1000;
 bool verbose = true;
 
 // CUDA error check
