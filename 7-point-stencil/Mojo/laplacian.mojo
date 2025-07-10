@@ -1,19 +1,21 @@
+# Based on AMD lab notes : Finite difference method – Laplacian part 1
+# https://github.com/amd/amd-lab-notes/blob/release/finite-difference/examples/kernel1.hpp
+
 from sys import argv, has_accelerator
 from sys.info import sizeof
 from math import ceildiv
 from time import monotonic
-from os.atomic import Atomic
 
 from gpu.host import DeviceContext
 from gpu.id import block_dim, block_idx, thread_idx
 from layout import Layout, LayoutTensor
 
-alias L = 1024
+alias L = 512
 alias num_iter = 1000
-alias TBSize = 256
+alias TBSize = 512
 
-alias precision = Float64
-alias dtype = DType.float64
+alias precision = Float32
+alias dtype = DType.float32
 alias layout = Layout.row_major(L, L, L)
 
 fn laplacian_kernel(
@@ -68,7 +70,7 @@ def main():
     BLK_X: Int = TBSize
     BLK_Y: Int = 1
     BLK_Z: Int = 1
-    verbose: Int = 0
+    csv_output = False
 
     i = 0
     while i < len(args):
@@ -78,8 +80,8 @@ def main():
             BLK_Y = args[i + 2].__int__()
             BLK_Z = args[i + 3].__int__()
             i += 3
-        if arg == "--verbose" and i + 1 < len(args):
-            verbose = args[i + 1].__int__()
+        elif arg == "--csv":
+            csv_output = True
         i += 1
 
     @parameter
@@ -89,12 +91,18 @@ def main():
         nx = L
         ny = L
         nz = L
-        print("------------------------------")
-        print("L =", L, "; Block dimensions:", BLK_X, BLK_Y, BLK_Z)
 
         ctx = DeviceContext()
-        print("GPU:", ctx.name())
-        print("Driver:", ctx.get_api_version())
+        if not csv_output:
+            print("------------------------------")
+            print("L =", L, "; Block dimensions:", BLK_X, BLK_Y, BLK_Z)
+            print("GPU:", ctx.name())
+            print("Driver:", ctx.get_api_version())
+
+        # Data for bandwidth calculation:
+        theoretical_fetch_size = (nx * ny * nz - 8 - 4 * (nx - 2) - 4 * (ny - 2) - 4 * (nz - 2)) * sizeof[precision]()
+        theoretical_write_size = ((nx - 2) * (ny - 2) * (nz - 2)) * sizeof[precision]()
+        datasize = theoretical_fetch_size + theoretical_write_size
 
         d_u = ctx.enqueue_create_buffer[dtype](nx * ny * nz)
         d_f = ctx.enqueue_create_buffer[dtype](nx * ny * nz)
@@ -131,8 +139,8 @@ def main():
 
         # Timing:
         total_elapsed: UInt = 0
-        if verbose > 0:
-            print("Kernel execution times (ms):")
+        if csv_output:
+            print("backend,GPU,precision,L,blk_x,blk_y,blk_z,BW_GBs")
 
         for _ in range(num_iter):
             start = monotonic()
@@ -144,16 +152,17 @@ def main():
             )
             ctx.synchronize()
             end = monotonic()
-            if verbose > 0:
-                print((end - start) * 1e-6)
-            total_elapsed += (end - start)
 
-        # Effective memory bandwidth
-        theoretical_fetch_size = (nx * ny * nz - 8 - 4 * (nx - 2) - 4 * (ny - 2) - 4 * (nz - 2)) * sizeof[precision]()
-        theoretical_write_size = ((nx - 2) * (ny - 2) * (nz - 2)) * sizeof[precision]()
-        print("Theoretical fetch size (GB):", theoretical_fetch_size * 1e-9)
-        print("Theoretical fetch size (GB):", theoretical_write_size * 1e-9)
-        datasize = theoretical_fetch_size + theoretical_write_size
-        print("Average kernel time:", total_elapsed / 1e6 / num_iter, "ms")
-        print("Effective memory bandwidth:", datasize * num_iter / total_elapsed, "GB/s")
+            elapsed = end - start
+            bw_gbs = datasize / elapsed
+            if csv_output:
+                print("mojo,", ctx.name(), ",", dtype.__str__(), ",", L, ",", BLK_X, ",", BLK_Y, ",", BLK_Z, ",", bw_gbs)
+
+            total_elapsed += elapsed
+
+        if not csv_output:
+            print("Theoretical fetch size (GB):", theoretical_fetch_size * 1e-9)
+            print("Theoretical fetch size (GB):", theoretical_write_size * 1e-9)
+            print("Average kernel time:", total_elapsed / 1e6 / num_iter, "ms")
+            print("Effective memory bandwidth:", datasize * num_iter / total_elapsed, "GB/s")
 

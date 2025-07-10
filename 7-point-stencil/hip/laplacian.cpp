@@ -41,15 +41,19 @@ https://github.com/amd/amd-lab-notes/blob/release/finite-difference/examples/ker
 #include <stdio.h>
 #include <assert.h>
 #include <vector>
+#include <string>
 #include "kernel.hpp"
 
-using precision = double;
+using precision = float;
 using namespace std;
 
+char precision_str[] = "float";
+
+
 const uint32_t TBSize = 256;
-const uint32_t L = 512;
+const uint32_t L = 1024;
 const uint32_t NUM_ITER = 1000;
-bool verbose = true;
+bool csv_output = false;
 
 // HIP error check
 #define HIP_CHECK(stat)                                           \
@@ -108,7 +112,7 @@ int main(int argc, char **argv)
     // Default problem size
     size_t nx = L, ny = L, nz = L;
 
-    precision tolerance = 3e-6;
+    // precision tolerance = 3e-6;
 
     if (argc > 1) nx = atoi(argv[1]);
     if (argc > 2) ny = atoi(argv[2]);
@@ -116,18 +120,29 @@ int main(int argc, char **argv)
     if (argc > 4) BLK_X = atoi(argv[4]);
     if (argc > 5) BLK_Y = atoi(argv[5]);
     if (argc > 6) BLK_Z = atoi(argv[6]);
-
-    cout << "Precision: double" << endl;
-
-    cout << "nx,ny,nz = " << nx << ", " << ny << ", " << nz << endl;
-    cout << "block sizes = " << BLK_X << ", " << BLK_Y << ", " << BLK_Z << endl;
+    if (argc > 7 && string(argv[7]) == "--csv") csv_output = true;
 
     // Theoretical fetch and write sizes:
     size_t theoretical_fetch_size = (nx * ny * nz - 8 - 4 * (nx - 2) - 4 * (ny - 2) - 4 * (nz - 2) ) * sizeof(precision);
     size_t theoretical_write_size = ((nx - 2) * (ny - 2) * (nz - 2)) * sizeof(precision);
+    size_t datasize = theoretical_fetch_size + theoretical_write_size;
 
-    cout << "Theoretical fetch size (GB): " << theoretical_fetch_size * 1e-9 << endl;
-    cout << "Theoretical write size (GB): " << theoretical_write_size * 1e-9 << endl;
+    int device;
+    HIP_CHECK( hipGetDevice(&device) );
+    hipDeviceProp_t props;
+    HIP_CHECK( hipGetDeviceProperties(&props, device) );
+
+    if (csv_output) {
+        cout << "backend,GPU,precision,L,blk_x,blk_y,blk_z,BW_GBs" << endl;
+    }
+    else {
+        cout << props.name << endl;
+        cout << "Precision: double" << endl;
+        cout << "nx,ny,nz = " << nx << ", " << ny << ", " << nz << endl;
+        cout << "block sizes = " << BLK_X << ", " << BLK_Y << ", " << BLK_Z << endl;
+        cout << "Theoretical fetch size (GB): " << theoretical_fetch_size * 1e-9 << endl;
+        cout << "Theoretical write size (GB): " << theoretical_write_size * 1e-9 << endl;
+    }
 
     size_t numbytes = nx * ny * nz * sizeof(precision);
 
@@ -153,10 +168,6 @@ int main(int argc, char **argv)
     HIP_CHECK( hipEventCreate(&start) );
     HIP_CHECK( hipEventCreate(&stop)  );
 
-    if (verbose) {
-        cout << "Kernel execution times (ms):" << endl;
-    }
-
     for (int iter = 0; iter < NUM_ITER; ++iter) {
         // Flush cache
         HIP_CHECK( hipDeviceSynchronize()                     );
@@ -166,18 +177,20 @@ int main(int argc, char **argv)
         HIP_CHECK( hipEventRecord(stop)                       );
         HIP_CHECK( hipEventSynchronize(stop)                  );
         HIP_CHECK( hipEventElapsedTime(&elapsed, start, stop) );
-        if (verbose) {
-            printf("%f\n", elapsed);
+        if (csv_output) {
+            printf("HIP,%s,%s,%zu,%d,%d,%d,%g\n", props.name, precision_str,
+            nx, BLK_X, BLK_Y, BLK_Z, datasize / elapsed / 1e6);
         }
         total_elapsed += elapsed;
     }
 
     // Effective memory bandwidth
-    size_t datasize = theoretical_fetch_size + theoretical_write_size;
-    printf("Laplacian kernel took: %g ms, effective memory bandwidth: %g GB/s \n\n",
-            total_elapsed / NUM_ITER,
-            datasize * NUM_ITER / total_elapsed / 1e6
-            );
+    if (!csv_output) {
+        printf("Laplacian kernel took: %g ms, effective memory bandwidth: %g GB/s \n\n",
+                total_elapsed / NUM_ITER,
+                datasize * NUM_ITER / total_elapsed / 1e6
+                );
+    }
 
     // Clean up
     HIP_CHECK( hipFree(d_f) );
