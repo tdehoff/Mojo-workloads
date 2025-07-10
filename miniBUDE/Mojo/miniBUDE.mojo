@@ -359,6 +359,7 @@ fn fasten_kernel[PPWI: Int](natlig: Int, natpro: Int,
                 var y = lpos[i].y - p_atom_y
                 var z = lpos[i].z - p_atom_z
                 var distij = sqrt(x * x + y * y + z * z)
+                print(distij)
 
                 # Calculate the sum of the sphere radii
                 var distbb = distij - radij
@@ -449,20 +450,21 @@ def main():
         d_etotals = ctx.enqueue_create_buffer[dtype](len(deck.poses[1]))
 
         protein_flat = ctx.enqueue_create_host_buffer[dtype](len(protein) * 4)
+        var elements_per_atom = 4
         for i in range(len(protein)):
-            protein_flat[i * sizeof[Atom]()] = protein[i].x
-            protein_flat[i * sizeof[Atom]() + 1] = protein[i].y
-            protein_flat[i * sizeof[Atom]() + 2] = protein[i].z
-            protein_flat[i * sizeof[Atom]() + 3] = Float32(protein[i].type)
+            protein_flat[i * elements_per_atom] = protein[i].x
+            protein_flat[i * elements_per_atom + 1] = protein[i].y
+            protein_flat[i * elements_per_atom + 2] = protein[i].z
+            protein_flat[i * elements_per_atom + 3] = Float32(protein[i].type)
         d_protein = ctx.enqueue_create_buffer[dtype](len(protein_flat))
         ctx.enqueue_copy(dst_buf=d_protein, src_buf=protein_flat)
 
         ligand_flat = ctx.enqueue_create_host_buffer[dtype](len(ligand) * 4)
         for i in range(len(ligand)):
-            ligand_flat[i * sizeof[Atom]()] = ligand[i].x
-            ligand_flat[i * sizeof[Atom]() + 1] = ligand[i].y
-            ligand_flat[i * sizeof[Atom]() + 2] = ligand[i].z
-            ligand_flat[i * sizeof[Atom]() + 3] = Float32(ligand[i].type)
+            ligand_flat[i * elements_per_atom] = ligand[i].x
+            ligand_flat[i * elements_per_atom + 1] = ligand[i].y
+            ligand_flat[i * elements_per_atom + 2] = ligand[i].z
+            ligand_flat[i * elements_per_atom + 3] = Float32(ligand[i].type)
         d_ligand = ctx.enqueue_create_buffer[dtype](len(ligand_flat))
         ctx.enqueue_copy(dst_buf=d_ligand, src_buf=ligand_flat)
         # print(ligand_flat[0], ligand_flat[4], ligand_flat[8])
