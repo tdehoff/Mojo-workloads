@@ -137,7 +137,9 @@ def main():
 
         # Array of partial sums for dor kernel
         sums = ctx.enqueue_create_host_buffer[dtype](dot_num_blocks)
-        sums_ptr = sums.unsafe_ptr()
+        # sums_ptr = sums.unsafe_ptr()
+        d_sums = ctx.enqueue_create_buffer[dtype](dot_num_blocks)
+        d_sums_ptr = d_sums.unsafe_ptr()
 
         # Initialize a, b, c
         ctx.enqueue_function[init_kernel](
@@ -198,13 +200,20 @@ def main():
 
             # Test dot:
             start = monotonic()
+            # ctx.enqueue_function[dot_kernel[SIZE]](
+            #     a_ptr, b_ptr, sums_ptr,
+            #     grid_dim = dot_num_blocks,
+            #     block_dim = TBSize
+            # )
             ctx.enqueue_function[dot_kernel[SIZE]](
-                a_ptr, b_ptr, sums_ptr,
+                a_ptr, b_ptr, d_sums_ptr,
                 grid_dim = dot_num_blocks,
                 block_dim = TBSize
             )
             ctx.synchronize()
             sum: Scalar[dtype] = 0
+            ctx.enqueue_copy(dst_buf=sums, src_buf=d_sums)
+            ctx.synchronize()
             for i in range (dot_num_blocks):
                 sum += sums[i]
             end = monotonic()
