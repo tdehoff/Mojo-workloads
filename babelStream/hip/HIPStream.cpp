@@ -43,13 +43,6 @@ HIPStream<T>::HIPStream(const int ARRAY_SIZE, const int device_index)
   // Print out device information
   std::cout << "Using HIP device " << getDeviceName(device_index) << std::endl;
   std::cout << "Driver: " << getDeviceDriver(device_index) << std::endl;
-#if defined(MANAGED)
-    std::cout << "Memory: MANAGED" << std::endl;
-#elif defined(PAGEFAULT)
-    std::cout << "Memory: PAGEFAULT" << std::endl;
-#else
-    std::cout << "Memory: DEFAULT" << std::endl;
-#endif
 
   array_size = ARRAY_SIZE;
   // Round dot_num_blocks up to next multiple of (TBSIZE * dot_elements_per_lane)
@@ -72,19 +65,9 @@ HIPStream<T>::HIPStream(const int ARRAY_SIZE, const int device_index)
     throw std::runtime_error("Device does not have enough memory for all 3 buffers");
 
  // Create device buffers
-#if defined(MANAGED)
-  HIP_CHECK( hipMallocManaged(&d_a, array_bytes) );
-  HIP_CHECK( hipMallocManaged(&d_b, array_bytes) );
-  HIP_CHECK( hipMallocManaged(&d_c, array_bytes) );
-#elif defined(PAGEFAULT)
-  d_a = (T*)malloc(array_bytes);
-  d_b = (T*)malloc(array_bytes);
-  d_c = (T*)malloc(array_bytes);
-#else
   HIP_CHECK( hipMalloc(&d_a, array_bytes) );
   HIP_CHECK( hipMalloc(&d_b, array_bytes) );
   HIP_CHECK( hipMalloc(&d_c, array_bytes) );
-#endif
 }
 
 

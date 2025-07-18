@@ -96,6 +96,7 @@ fn dot_kernel[size: Int](
         sums[block_idx.x] = tb_sum[local_tid]
 
 def main():
+    csv_output = False
     np = Python.import_module("numpy")
 
     args = argv()
@@ -103,8 +104,8 @@ def main():
     i = 0
     while i < len(args):
         arg = args[i]
-        if arg == "--verbose" and i + 1 < len(args):
-            verbose = args[i + 1].__int__()
+        if arg == "--csv":
+            csv_output = True
         i += 1
 
     # The array size must be divisible by TBSIZE for kernel launches
@@ -117,8 +118,9 @@ def main():
         print("No compatible GPU found")
     else:
         ctx = DeviceContext()
-        print("GPU:", ctx.name())
-        print("Driver:", ctx.get_api_version())
+        if not csv_output:
+            print("GPU:", ctx.name())
+            print("Driver:", ctx.get_api_version())
 
         d_a = ctx.enqueue_create_buffer[dtype](SIZE)
         d_b = ctx.enqueue_create_buffer[dtype](SIZE)
@@ -200,11 +202,6 @@ def main():
 
             # Test dot:
             start = monotonic()
-            # ctx.enqueue_function[dot_kernel[SIZE]](
-            #     a_ptr, b_ptr, sums_ptr,
-            #     grid_dim = dot_num_blocks,
-            #     block_dim = TBSize
-            # )
             ctx.enqueue_function[dot_kernel[SIZE]](
                 a_ptr, b_ptr, d_sums_ptr,
                 grid_dim = dot_num_blocks,
@@ -229,20 +226,18 @@ def main():
             2 * SIZE * sizeof[Scalar[dtype]](),
         )
 
-        if verbose > 0:
+        if csv_output:
+            print("backend,GPU,precision,vec_size,routine,BW_GBs")
             for i in range(5):
-                print(kernel_names[i],"kernel execution times (ms):")
                 for k in range(num_iter):
-                    print(kernel_timings[i][k] * 1e-6)
-                print()
-
-        print("Array size:", SIZE * sizeof[Scalar[dtype]]() * 1e-6, "MB")
-        print("Total size:", 3 * SIZE * sizeof[Scalar[dtype]]() * 1e-6, "MB")
-
-        for i in range (5):
-            print(kernel_names[i], ":")
-            # Ignore the first result
-            print("   Min (sec):", kernel_timings[i][1:].min() * 1e-9)
-            print("   Max (sec):", kernel_timings[i][1:].max() * 1e-9)
-            print("   Avg (sec):", kernel_timings[i][1:].mean() * 1e-9)
-            print("   Bandwidth (GB/s):", kernel_data[i] / kernel_timings[i][1:].min())
+                    print("Mojo,", ctx.name(), ",", dtype.__str__(), ",", SIZE, ",", kernel_names[i], ",", kernel_data[i] / kernel_timings[i][k])
+        else:
+            print("Array size:", SIZE * sizeof[Scalar[dtype]]() * 1e-6, "MB")
+            print("Total size:", 3 * SIZE * sizeof[Scalar[dtype]]() * 1e-6, "MB")
+            for i in range (5):
+                print(kernel_names[i], ":")
+                # Ignore the first result
+                print("   Min (sec):", kernel_timings[i][1:].min() * 1e-9)
+                print("   Max (sec):", kernel_timings[i][1:].max() * 1e-9)
+                print("   Avg (sec):", kernel_timings[i][1:].mean() * 1e-9)
+                print("   Bandwidth (GB/s):", kernel_data[i] / kernel_timings[i][1:].min())

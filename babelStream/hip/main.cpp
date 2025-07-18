@@ -19,6 +19,7 @@
 
 #include "Stream.h"
 #include "HIPStream.h"
+#include "hip/hip_runtime.h"
 
 // Default size of 2^25
 int ARRAY_SIZE = 33554432;
@@ -26,6 +27,18 @@ unsigned int num_times = 1000;
 unsigned int deviceIndex = 0;
 bool use_float = false;
 bool mibibytes = false;
+bool csv_output = false;
+
+// HIP error check
+#define HIP_CHECK(stat)                                           \
+{                                                                 \
+    if(stat != hipSuccess)                                        \
+    {                                                             \
+        std::cerr << "HIP error: " << hipGetErrorString(stat) <<  \
+        " in file " << __FILE__ << ":" << __LINE__ << std::endl;  \
+        exit(-1);                                                 \
+    }                                                             \
+}
 
 template <typename T>
 void run();
@@ -37,10 +50,10 @@ int main(int argc, char *argv[])
 
   parseArguments(argc, argv);
 
-  std::cout
-      << "BabelStream" << std::endl
-      << "Version: " << VERSION_STRING << std::endl
-      << "Implementation: " << IMPLEMENTATION_STRING << std::endl;
+  // std::cout
+  //     << "BabelStream" << std::endl
+  //     << "Version: " << VERSION_STRING << std::endl
+  //     << "Implementation: " << IMPLEMENTATION_STRING << std::endl;
 
   if (use_float)
     run<float>();
@@ -105,35 +118,39 @@ void run()
 {
   std::streamsize ss = std::cout.precision();
 
+    if (!csv_output) {
+      std::cout << "Running kernels " << num_times << " times" << std::endl;
 
-    std::cout << "Running kernels " << num_times << " times" << std::endl;
+      if (sizeof(T) == sizeof(float))
+        std::cout << "Precision: float" << std::endl;
+      else
+        std::cout << "Precision: double" << std::endl;
 
-    if (sizeof(T) == sizeof(float))
-      std::cout << "Precision: float" << std::endl;
-    else
-      std::cout << "Precision: double" << std::endl;
-
-
-    if (mibibytes)
-    {
-      // MiB = 2^20
-      std::cout << std::setprecision(1) << std::fixed
-                << "Array size: " << ARRAY_SIZE*sizeof(T)*std::pow(2.0, -20.0) << " MiB"
-                << " (=" << ARRAY_SIZE*sizeof(T)*std::pow(2.0, -30.0) << " GiB)" << std::endl;
-      std::cout << "Total size: " << 3.0*ARRAY_SIZE*sizeof(T)*std::pow(2.0, -20.0) << " MiB"
-                << " (=" << 3.0*ARRAY_SIZE*sizeof(T)*std::pow(2.0, -30.0) << " GiB)" << std::endl;
+      if (mibibytes)
+      {
+        // MiB = 2^20
+        std::cout << std::setprecision(1) << std::fixed
+                  << "Array size: " << ARRAY_SIZE*sizeof(T)*std::pow(2.0, -20.0) << " MiB"
+                  << " (=" << ARRAY_SIZE*sizeof(T)*std::pow(2.0, -30.0) << " GiB)" << std::endl;
+        std::cout << "Total size: " << 3.0*ARRAY_SIZE*sizeof(T)*std::pow(2.0, -20.0) << " MiB"
+                  << " (=" << 3.0*ARRAY_SIZE*sizeof(T)*std::pow(2.0, -30.0) << " GiB)" << std::endl;
+      }
+      else
+      {
+        // MB = 10^6
+        std::cout << std::setprecision(1) << std::fixed
+                  << "Array size: " << ARRAY_SIZE*sizeof(T)*1.0E-6 << " MB"
+                  << " (=" << ARRAY_SIZE*sizeof(T)*1.0E-9 << " GB)" << std::endl;
+        std::cout << "Total size: " << 3.0*ARRAY_SIZE*sizeof(T)*1.0E-6 << " MB"
+                  << " (=" << 3.0*ARRAY_SIZE*sizeof(T)*1.0E-9 << " GB)" << std::endl;
+      }
+      std::cout.precision(ss);
     }
-    else
-    {
-      // MB = 10^6
-      std::cout << std::setprecision(1) << std::fixed
-                << "Array size: " << ARRAY_SIZE*sizeof(T)*1.0E-6 << " MB"
-                << " (=" << ARRAY_SIZE*sizeof(T)*1.0E-9 << " GB)" << std::endl;
-      std::cout << "Total size: " << 3.0*ARRAY_SIZE*sizeof(T)*1.0E-6 << " MB"
-                << " (=" << 3.0*ARRAY_SIZE*sizeof(T)*1.0E-9 << " GB)" << std::endl;
-    }
-    std::cout.precision(ss);
 
+  int device;
+  HIP_CHECK( hipGetDevice(&device) );
+  hipDeviceProp_t props;
+  HIP_CHECK( hipGetDeviceProperties(&props, device) );
 
   Stream<T> *stream;
   stream = new HIPStream<T>(ARRAY_SIZE, deviceIndex);
@@ -152,6 +169,7 @@ void run()
   auto initElapsedS = std::chrono::duration_cast<std::chrono::duration<double>>(init2 - init1).count();
   auto initBWps = ((mibibytes ? std::pow(2.0, -20.0) : 1.0E-9) * (3 * sizeof(T) * ARRAY_SIZE)) / initElapsedS;
 
+  if (!csv_output) {
     std::cout << "Init: "
       << std::setw(7)
       << initElapsedS
@@ -169,6 +187,10 @@ void run()
       << std::left << std::setw(12) << "Average"
       << std::endl
       << std::fixed;
+  }
+  else {
+    std::cout << "backend,GPU,precision,vec_size,routine,BW_GBs" << std::endl;
+  }
 
   std::vector<std::string> labels;
   std::vector<size_t> sizes;
@@ -189,8 +211,14 @@ void run()
       // Calculate average; ignore the first result
       double average = std::accumulate(timings[i].begin()+1, timings[i].end(), 0.0) / (double)(num_times - 1);
 
-      // Display results
+      std::string precision;
+      if (sizeof(T) == sizeof(float))
+        precision = "float32";
+      else
+        precision = "float64";
 
+      // Display results
+      if (!csv_output) {
         std::cout
           << std::left << std::setw(12) << labels[i]
           << std::left << std::setw(12) << std::setprecision(3) <<
@@ -199,6 +227,14 @@ void run()
           << std::left << std::setw(12) << std::setprecision(5) << *minmax.second
           << std::left << std::setw(12) << std::setprecision(5) << average
           << std::endl;
+      }
+      else {
+        for (int j = 0; j < timings[i].size(); ++j) {
+          std::cout << "HIP," << props.name << "," << precision
+                    << "," << ARRAY_SIZE << "," << labels[i] << ","
+                    << 1.0E-9 * sizes[i] / timings[i][j] << std::endl;
+        }
+      }
     }
 
   delete stream;
@@ -265,6 +301,10 @@ void parseArguments(int argc, char *argv[])
     else if (!std::string("--mibibytes").compare(argv[i]))
     {
       mibibytes = true;
+    }
+    else if (!std::string("--csv").compare(argv[i]))
+    {
+      csv_output = true;
     }
     else if (!std::string("--help").compare(argv[i]) ||
              !std::string("-h").compare(argv[i]))
