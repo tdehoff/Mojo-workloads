@@ -1,5 +1,5 @@
 CC = nvcc
-FLAGS=-O3 -std=c++17
+FLAGS=-forward-unknown-to-host-compiler -arch=sm_90  -DNDEBUG -O3 -march=native -std=c++11
 
 SRCS = main.cpp CUDAStream.cu
 HEADERS = Stream.h CUDAStream.h
