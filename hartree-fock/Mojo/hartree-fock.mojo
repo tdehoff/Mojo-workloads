@@ -1,12 +1,14 @@
-from gpu.host import DeviceContext
-from sys import has_accelerator
-from gpu.id import block_dim, block_idx, thread_idx
-from layout import Layout, LayoutTensor
+from sys import has_accelerator, argv
 from sys.info import sizeof
 from math import ceildiv, exp, sqrt, erf
 from time import monotonic
 from os.atomic import Atomic
 
+from gpu.id import block_dim, block_idx, thread_idx
+from gpu.host import DeviceContext
+from layout import Layout, LayoutTensor
+
+alias num_iter = 10
 alias natoms = 256
 alias ngauss = 3
 alias filepath = "../tests/he" + String(natoms)
@@ -186,95 +188,128 @@ fn hartree_fock_kernel(ngauss: Int, schwarz: UnsafePointer[Float64],
                              rebind[Scalar[dtype]](dens[i, k] * eri * -1))
 
 def main():
+    args = argv()
+    csv_output = False
+
+    i = 0
+    while i < len(args):
+        arg = args[i]
+        if arg == "--csv":
+            csv_output = True
+        i += 1
+
     if not has_accelerator():
         print("No compatible GPU found")
     else:
         ctx = DeviceContext()
-        print("GPU:", ctx.name())
+
+        if not csv_output:
+            print("GPU:", ctx.name())
+            print("Driver:", ctx.get_api_version())
+            print("natoms:", natoms, "; ngauss:", ngauss)
 
         xpnt = ctx.enqueue_create_host_buffer[dtype](ngauss)
         coef = ctx.enqueue_create_host_buffer[dtype](ngauss)
         geom = ctx.enqueue_create_host_buffer[dtype](natoms * ngauss)
 
-        _ = read_file(xpnt.unsafe_ptr(), coef.unsafe_ptr(), geom.unsafe_ptr())
-
-        for i in range(natoms):
-            geom[0 * natoms + i] *= tobohrs
-            geom[1 * natoms + i] *= tobohrs
-            geom[2 * natoms + i] *= tobohrs
-
-        geom_tensor = LayoutTensor[dtype, geom_layout](geom)
-
-        # Doesn't work on AMD
-        # dens = ctx.enqueue_create_host_buffer[dtype](natoms * natoms).enqueue_fill(0.1)
-        dens = ctx.enqueue_create_host_buffer[dtype](natoms * natoms)
-        ctx.synchronize()
-
-        for i in range(natoms * natoms):
-            dens[i] = 0.1
-
-        for i in range(natoms):
-            dens[i * natoms + i] = 1.0
-
-        nn = ((natoms * natoms) + natoms) // 2
-        schwarz = ctx.enqueue_create_host_buffer[dtype](nn + 1)
-
-        for i in range(ngauss):
-            coef[i] = coef[i] * pow((2.0 * xpnt[i]), 0.75)
-
-        var ij = 0
-        var eri: Float64 = 0.0
-        for i in range(natoms):
-            for j in range(i + 1):
-                ij = ij + 1
-                eri = ssss(i, j, i, j, ngauss, xpnt.unsafe_ptr(), coef.unsafe_ptr(), geom_tensor)
-                schwarz[ij] = sqrt(abs(eri))
-
-        d_geom = ctx.enqueue_create_buffer[dtype](natoms * ngauss)
-        ctx.enqueue_copy(dst_buf=d_geom, src_buf=geom)
-        d_geom_tensor = LayoutTensor[dtype, geom_layout](d_geom)
-
-        d_dens = ctx.enqueue_create_buffer[dtype](natoms * natoms)
-        ctx.enqueue_copy(dst_buf=d_dens, src_buf=dens)
-        d_dens_tensor = LayoutTensor[dtype, layout](d_dens)
-
-        d_fock = ctx.enqueue_create_buffer[dtype](natoms * natoms).enqueue_fill(0.0)
-        d_fock_tensor = LayoutTensor[dtype, layout](d_fock)
-
-        d_schwarz = ctx.enqueue_create_buffer[dtype](nn + 1)
-        ctx.enqueue_copy(dst_buf=d_schwarz, src_buf=schwarz)
-
-        d_coef = ctx.enqueue_create_buffer[dtype](ngauss)
-        with d_coef.map_to_host() as h_coef:
-            for i in range(ngauss):
-                h_coef[i] = coef[i]
-
-        d_xpnt = ctx.enqueue_create_buffer[dtype](ngauss)
-        with d_xpnt.map_to_host() as h_xpnt:
-            for i in range(ngauss):
-                h_xpnt[i] = xpnt[i]
-        ctx.synchronize()
-
-        nnnn = ((nn * nn) + nn) // 2
-        block_size = 256
-        n_blocks = ceildiv(nnnn, block_size)
-
-        ctx.enqueue_function[hartree_fock_kernel](
-            ngauss, d_schwarz.unsafe_ptr(),
-            d_xpnt.unsafe_ptr(), d_coef.unsafe_ptr(),
-            d_geom_tensor, d_dens_tensor,
-            d_fock_tensor,
-            grid_dim = (n_blocks, 1, 1),
-            block_dim = (block_size, 1, 1)
-        )
-        ctx.synchronize()
-
-        var erep: Float64 = 0.0
-        with d_fock.map_to_host() as final_fock, d_dens.map_to_host() as final_dens:
+        if read_file(xpnt.unsafe_ptr(), coef.unsafe_ptr(), geom.unsafe_ptr()):
             for i in range(natoms):
-                for j in range(natoms):
-                    erep += final_fock[i * natoms + j] * final_dens[i * natoms + j]
-        print("2e- energy =", erep * 0.5)
+                geom[0 * natoms + i] *= tobohrs
+                geom[1 * natoms + i] *= tobohrs
+                geom[2 * natoms + i] *= tobohrs
 
-        # Expected result for he8 test
-        # print("expected: 11.585212581525834")
+            geom_tensor = LayoutTensor[dtype, geom_layout](geom)
+
+            # Doesn't work on AMD
+            # dens = ctx.enqueue_create_host_buffer[dtype](natoms * natoms).enqueue_fill(0.1)
+            dens = ctx.enqueue_create_host_buffer[dtype](natoms * natoms)
+            ctx.synchronize()
+
+            for i in range(natoms * natoms):
+                dens[i] = 0.1
+
+            for i in range(natoms):
+                dens[i * natoms + i] = 1.0
+
+            nn = ((natoms * natoms) + natoms) // 2
+            schwarz = ctx.enqueue_create_host_buffer[dtype](nn + 1)
+
+            for i in range(ngauss):
+                coef[i] = coef[i] * pow((2.0 * xpnt[i]), 0.75)
+
+            var ij = 0
+            var eri: Float64 = 0.0
+            for i in range(natoms):
+                for j in range(i + 1):
+                    ij = ij + 1
+                    eri = ssss(i, j, i, j, ngauss, xpnt.unsafe_ptr(), coef.unsafe_ptr(), geom_tensor)
+                    schwarz[ij] = sqrt(abs(eri))
+
+            d_geom = ctx.enqueue_create_buffer[dtype](natoms * ngauss)
+            ctx.enqueue_copy(dst_buf=d_geom, src_buf=geom)
+            d_geom_tensor = LayoutTensor[dtype, geom_layout](d_geom)
+
+            d_dens = ctx.enqueue_create_buffer[dtype](natoms * natoms)
+            ctx.enqueue_copy(dst_buf=d_dens, src_buf=dens)
+            d_dens_tensor = LayoutTensor[dtype, layout](d_dens)
+
+            d_fock = ctx.enqueue_create_buffer[dtype](natoms * natoms).enqueue_fill(0.0)
+            d_fock_tensor = LayoutTensor[dtype, layout](d_fock)
+
+            d_schwarz = ctx.enqueue_create_buffer[dtype](nn + 1)
+            ctx.enqueue_copy(dst_buf=d_schwarz, src_buf=schwarz)
+
+            d_coef = ctx.enqueue_create_buffer[dtype](ngauss)
+            with d_coef.map_to_host() as h_coef:
+                for i in range(ngauss):
+                    h_coef[i] = coef[i]
+
+            d_xpnt = ctx.enqueue_create_buffer[dtype](ngauss)
+            with d_xpnt.map_to_host() as h_xpnt:
+                for i in range(ngauss):
+                    h_xpnt[i] = xpnt[i]
+            ctx.synchronize()
+
+            nnnn = ((nn * nn) + nn) // 2
+            block_size = 256
+            n_blocks = ceildiv(nnnn, block_size)
+
+            # Warmup call
+            ctx.enqueue_function[hartree_fock_kernel](
+                ngauss, d_schwarz.unsafe_ptr(),
+                d_xpnt.unsafe_ptr(), d_coef.unsafe_ptr(),
+                d_geom_tensor, d_dens_tensor,
+                d_fock_tensor,
+                grid_dim = (n_blocks, 1, 1),
+                block_dim = (block_size, 1, 1)
+            )
+            ctx.synchronize()
+
+            var erep: Float64 = 0.0
+            with d_fock.map_to_host() as final_fock, d_dens.map_to_host() as final_dens:
+                for i in range(natoms):
+                    for j in range(natoms):
+                        erep += final_fock[i * natoms + j] * final_dens[i * natoms + j]
+
+            if not csv_output:
+                print("2e- energy =", erep * 0.5)
+                # Expected result for he8 test
+                # print("expected: 11.585212581525834")
+            else:
+                print("backend,GPU,natoms,ngauss,exec_time_ms")
+
+                for _ in range(num_iter):
+                    start = monotonic()
+                    ctx.enqueue_function[hartree_fock_kernel](
+                        ngauss, d_schwarz.unsafe_ptr(),
+                        d_xpnt.unsafe_ptr(), d_coef.unsafe_ptr(),
+                        d_geom_tensor, d_dens_tensor,
+                        d_fock_tensor,
+                        grid_dim = (n_blocks, 1, 1),
+                        block_dim = (block_size, 1, 1)
+                    )
+                    ctx.synchronize()
+                    end = monotonic()
+
+                    elapsed = end - start
+                    print("Mojo,", ctx.name(), ",", natoms, ",", ngauss, ",", elapsed / 1e6)
