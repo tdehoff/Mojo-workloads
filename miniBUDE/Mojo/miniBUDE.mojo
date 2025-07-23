@@ -1,5 +1,4 @@
 from sys import has_accelerator
-from sys.info import sizeof
 from gpu import block_dim, block_idx, thread_idx, grid_dim, barrier
 from gpu.host import DeviceContext
 from gpu.memory import AddressSpace, load
@@ -202,7 +201,7 @@ struct Params:
                 iterations: Int = NUM_ITER,
                 wgsize: Int = WG_SIZE,
                 ppwi: Int = PPWI,
-                deck: String = "data"):
+                deck: String = "../data"):
         self.num_poses = num_poses
         self.iterations = iterations
         self.wgsize = wgsize
@@ -233,7 +232,7 @@ fn fasten_kernel[PPWI: Int](natlig: Int, natpro: Int,
         ix = num_transforms - PPWI
 
     # Compute transformation matrix to private memory
-    var etot = SIMD[dtype, PPWI]()
+    var etot = InlineArray[Float32, PPWI](fill=0)
     var transform = InlineArray[Vec4f32, PPWI * 3](uninitialized=True)
 
     var lsz = block_dim.x
@@ -334,9 +333,9 @@ fn fasten_kernel[PPWI: Int](natlig: Int, natpro: Int,
 
             var l_hphb = l_params_hphb
             if phphb_gtz and lhphb_ltz:
-                p_hphb *= -One
+                l_hphb *= -One
             else:
-                p_hphb *= One
+                l_hphb *= One
 
             var distdslv: Float32
             if phphb_ltz:
@@ -359,9 +358,6 @@ fn fasten_kernel[PPWI: Int](natlig: Int, natpro: Int,
                 var y = lpos[i].y - p_atom_y
                 var z = lpos[i].z - p_atom_z
                 var distij = sqrt(x * x + y * y + z * z)
-                print(distij)
-
-                # Calculate the sum of the sphere radii
                 var distbb = distij - radij
                 var zone1 = distbb < Zero
 
@@ -419,8 +415,6 @@ fn fasten_kernel[PPWI: Int](natlig: Int, natpro: Int,
     if td_base < num_transforms:
         for i in range(PPWI):
             etotals[td_base + i * block_dim.x] = etot[i] * Half
-            # print(etot[i])
-
 
 def main():
     if not has_accelerator():
@@ -446,35 +440,36 @@ def main():
         print("Deck      : ", params.deck)
         print("WGsize    : ", params.wgsize)
         print("PPWI      : ", params.ppwi)
+        print("")
 
         d_etotals = ctx.enqueue_create_buffer[dtype](len(deck.poses[1]))
 
         protein_flat = ctx.enqueue_create_host_buffer[dtype](len(protein) * 4)
-        var elements_per_atom = 4
+        var elements_per_struct = 4
         for i in range(len(protein)):
-            protein_flat[i * elements_per_atom] = protein[i].x
-            protein_flat[i * elements_per_atom + 1] = protein[i].y
-            protein_flat[i * elements_per_atom + 2] = protein[i].z
-            protein_flat[i * elements_per_atom + 3] = Float32(protein[i].type)
+            protein_flat[i * elements_per_struct] = protein[i].x
+            protein_flat[i * elements_per_struct + 1] = protein[i].y
+            protein_flat[i * elements_per_struct + 2] = protein[i].z
+            protein_flat[i * elements_per_struct + 3] = Float32(protein[i].type)
         d_protein = ctx.enqueue_create_buffer[dtype](len(protein_flat))
         ctx.enqueue_copy(dst_buf=d_protein, src_buf=protein_flat)
 
         ligand_flat = ctx.enqueue_create_host_buffer[dtype](len(ligand) * 4)
         for i in range(len(ligand)):
-            ligand_flat[i * elements_per_atom] = ligand[i].x
-            ligand_flat[i * elements_per_atom + 1] = ligand[i].y
-            ligand_flat[i * elements_per_atom + 2] = ligand[i].z
-            ligand_flat[i * elements_per_atom + 3] = Float32(ligand[i].type)
+            ligand_flat[i * elements_per_struct] = ligand[i].x
+            ligand_flat[i * elements_per_struct + 1] = ligand[i].y
+            ligand_flat[i * elements_per_struct + 2] = ligand[i].z
+            ligand_flat[i * elements_per_struct + 3] = Float32(ligand[i].type)
         d_ligand = ctx.enqueue_create_buffer[dtype](len(ligand_flat))
         ctx.enqueue_copy(dst_buf=d_ligand, src_buf=ligand_flat)
         # print(ligand_flat[0], ligand_flat[4], ligand_flat[8])
 
         forcefield_flat = ctx.enqueue_create_host_buffer[dtype](len(forcefield) * 4)
         for i in range(len(forcefield)):
-            forcefield_flat[i * sizeof[FFParams]()] = Float32(forcefield[i].hbtype)
-            forcefield_flat[i * sizeof[FFParams]() + 1] = forcefield[i].radius
-            forcefield_flat[i * sizeof[FFParams]() + 2] = forcefield[i].hphb
-            forcefield_flat[i * sizeof[FFParams]() + 3] = forcefield[i].elsc
+            forcefield_flat[i * elements_per_struct] = Float32(forcefield[i].hbtype)
+            forcefield_flat[i * elements_per_struct + 1] = forcefield[i].radius
+            forcefield_flat[i * elements_per_struct + 2] = forcefield[i].hphb
+            forcefield_flat[i * elements_per_struct + 3] = forcefield[i].elsc
         d_forcefield = ctx.enqueue_create_buffer[dtype](len(forcefield_flat))
         ctx.enqueue_copy(dst_buf=d_forcefield, src_buf=forcefield_flat)
 
@@ -508,6 +503,6 @@ def main():
                                                   grid_dim = (num_blocks, 1, 1),
                                                   block_dim = (block_size, 1, 1))
         ctx.synchronize()
-        # with d_etotals.map_to_host() as result:
-        #     for i in range(len(result)):
-        #         print(result[i])
+        with d_etotals.map_to_host() as result:
+            for i in range(len(result)):
+                print(result[i])
