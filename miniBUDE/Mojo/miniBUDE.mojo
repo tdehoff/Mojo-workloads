@@ -1,18 +1,19 @@
-from sys import has_accelerator
-from gpu import block_dim, block_idx, thread_idx, grid_dim, barrier
-from gpu.host import DeviceContext
-from gpu.memory import AddressSpace, load
+from sys import has_accelerator, argv
+from collections import List
 from math import ceildiv, sin, cos, sqrt
 from time import monotonic
 from memory import stack_allocation
-from collections import List
-from python import Python
 from utils.numerics import max_finite
 
-alias NUM_ITER = 10
+from gpu import block_dim, block_idx, thread_idx, grid_dim
+from gpu.host import DeviceContext
+from python import Python
+
+alias NUM_ITER = 100
 alias NUM_POSES = 65536
 alias WG_SIZE = 64      # Work group size
-alias PPWI = 4          # Poses per work item
+# DEFAULT_PPWI 1, 2, 4, 8, 16, 32, 64, 128
+alias PPWI = 64         # Poses per work item
 
 alias Zero = 0.0
 alias Quarter = 0.25
@@ -201,7 +202,7 @@ struct Params:
                 iterations: Int = NUM_ITER,
                 wgsize: Int = WG_SIZE,
                 ppwi: Int = PPWI,
-                deck: String = "../data"):
+                deck: String = "../data/bm1"):
         self.num_poses = num_poses
         self.iterations = iterations
         self.wgsize = wgsize
@@ -417,11 +418,25 @@ fn fasten_kernel[PPWI: Int](natlig: Int, natpro: Int,
             etotals[td_base + i * block_dim.x] = etot[i] * Half
 
 def main():
+    args = argv()
+    csv_output = False
+    np = Python.import_module("numpy")
+
+    i = 0
+    while i < len(args):
+        arg = args[i]
+        if arg == "--csv":
+            csv_output = True
+        i += 1
+
     if not has_accelerator():
         print("No compatible GPU found")
     else:
         ctx = DeviceContext()
-        print("GPU:", ctx.name())
+
+        if not csv_output:
+            print("GPU:", ctx.name())
+            print("Driver:", ctx.get_api_version())
 
         var params = Params()
 
@@ -431,16 +446,16 @@ def main():
         var poses = read_poses(params.deck + "/poses.in")
 
         var deck = Deck(protein, ligand, forcefield, poses)
-
-        print("Poses     : ", len(deck.poses[0]))
-        print("Iterations: ", params.iterations)
-        print("Ligands   : ", len(deck.ligand))
-        print("Protein   : ", len(deck.protein))
-        print("Forcefield: ", len(deck.forcefield))
-        print("Deck      : ", params.deck)
-        print("WGsize    : ", params.wgsize)
-        print("PPWI      : ", params.ppwi)
-        print("")
+        if not csv_output:
+            print("Poses     : ", len(deck.poses[0]))
+            print("Iterations: ", params.iterations)
+            print("Ligands   : ", len(deck.ligand))
+            print("Protein   : ", len(deck.protein))
+            print("Forcefield: ", len(deck.forcefield))
+            print("Deck      : ", params.deck)
+            print("WGsize    : ", params.wgsize)
+            print("PPWI      : ", params.ppwi)
+            print("")
 
         d_etotals = ctx.enqueue_create_buffer[dtype](len(deck.poses[1]))
 
@@ -487,7 +502,7 @@ def main():
         var block_size = params.wgsize
         var num_blocks = ceildiv(params.num_poses, params.ppwi)
         num_blocks = ceildiv(num_blocks, block_size)
-
+        # Warmup call
         ctx.enqueue_function[fasten_kernel[PPWI]](len(deck.ligand), len(deck.protein),
                                                   d_protein.unsafe_ptr(),
                                                   d_ligand.unsafe_ptr(),
@@ -503,6 +518,52 @@ def main():
                                                   grid_dim = (num_blocks, 1, 1),
                                                   block_dim = (block_size, 1, 1))
         ctx.synchronize()
-        with d_etotals.map_to_host() as result:
-            for i in range(len(result)):
-                print(result[i])
+
+        # Timing:
+        kernel_timings = np.zeros(NUM_ITER, dtype="float32")
+        var total_elapsed = 0.0
+
+        for i in range(NUM_ITER):
+            start = monotonic()
+            ctx.enqueue_function[fasten_kernel[PPWI]](len(deck.ligand), len(deck.protein),
+                                                    d_protein.unsafe_ptr(),
+                                                    d_ligand.unsafe_ptr(),
+                                                    transforms_0,
+                                                    transforms_1,
+                                                    transforms_2,
+                                                    transforms_3,
+                                                    transforms_4,
+                                                    transforms_5,
+                                                    d_etotals.unsafe_ptr(),
+                                                    d_forcefield.unsafe_ptr(),
+                                                    params.num_poses,
+                                                    grid_dim = (num_blocks, 1, 1),
+                                                    block_dim = (block_size, 1, 1))
+            ctx.synchronize()
+            end = monotonic()
+            elapsed = end - start
+            kernel_timings[i] = Float32(elapsed)
+            total_elapsed += elapsed
+
+        if csv_output:
+            # print("backend,GPU,ppwi,wgsize,sum_ms,avg_ms,min_ms,max_ms,stddev_ms,gflops/s")
+
+            # Average time per iteration
+            var ns = total_elapsed / Float64(NUM_ITER)
+            var runtime = ns * 1e-9
+
+            # Compute FLOP/s
+            var ops_per_wg: UInt32 = PPWI * 27 + len(deck.ligand) * (2 + PPWI * 18 + len(deck.protein) * (10 + PPWI * 30)) + PPWI;
+            var total_ops = Float64(ops_per_wg) * ((NUM_POSES) / Float64(PPWI))
+            var flops = total_ops / runtime
+            var gflops = flops / 1e9
+
+            print("Mojo,", ctx.name(), ",", PPWI, ",", WG_SIZE, ",",
+                  kernel_timings.sum() * 1e-6, ",", kernel_timings.mean() * 1e-6, ",",
+                  kernel_timings.min() * 1e-6, ",", kernel_timings.max() * 1e-6, ",",
+                  kernel_timings.std() * 1e-6, ",", gflops)
+        # else:
+        #     # Print result
+        #     with d_etotals.map_to_host() as result:
+        #          for i in range(len(result)):
+        #              print(result[i])
