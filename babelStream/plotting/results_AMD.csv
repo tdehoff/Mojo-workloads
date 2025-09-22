@@ -5004,9 +5004,6 @@ Mojo, AMD Instinct MI300A , float64 , 33554432 , Dot , 2885.596
 Mojo, AMD Instinct MI300A , float64 , 33554432 , Dot , 2852.4797
 Mojo, AMD Instinct MI300A , float64 , 33554432 , Dot , 2881.569
 Mojo, AMD Instinct MI300A , float64 , 33554432 , Dot , 2755.6997
-Using HIP device AMD Instinct MI300A
-Driver: 60443482
-backend,GPU,precision,vec_size,routine,BW_GBsHIP,AMD Instinct MI300A,float64,33554432,Copy,2767.9
 HIP,AMD Instinct MI300A,float64,33554432,Copy,3730.58
 HIP,AMD Instinct MI300A,float64,33554432,Copy,3615
 HIP,AMD Instinct MI300A,float64,33554432,Copy,3707.36
