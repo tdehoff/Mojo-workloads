@@ -8,4 +8,5 @@ version = "0.1.0"
 [tasks]
 
 [dependencies]
-modular = ">=25.5.0.dev2025070207,<26"
+mojo = "==0.26.3.0.dev2026041305"
+numpy = "*"
