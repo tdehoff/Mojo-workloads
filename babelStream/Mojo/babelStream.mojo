@@ -11,10 +11,8 @@ from std.gpu.memory import AddressSpace, load
 from std.python import Python
 
 comptime dtype = DType.float64
-# Default size of 2^25
-# alias SIZE = pow(2, 25)    # input size, must be a multiple of 1024
 comptime SIZE = 1 << 25
-comptime num_iter = 5    # 1000 + 1 warmup runs
+comptime num_iter = 10   # 1000 + 1 warmup runs
 comptime TBSize = 1024
 
 comptime initA: Scalar[dtype] = 0.1
@@ -69,8 +67,8 @@ def triad_kernel(
     a[i] = b[i] + scalar * c[i]
 
 def dot_kernel[size: Int](
-    a: UnsafePointer[Scalar[dtype], MutAnyOrigin],
-    b: UnsafePointer[Scalar[dtype], MutAnyOrigin],
+    a: UnsafePointer[Scalar[dtype], ImmutAnyOrigin],
+    b: UnsafePointer[Scalar[dtype], ImmutAnyOrigin],
     sums: UnsafePointer[Scalar[dtype], MutAnyOrigin],
 ):
     var tb_sum = stack_allocation[
@@ -80,6 +78,7 @@ def dot_kernel[size: Int](
     ]()
     var i = block_dim.x * block_idx.x + thread_idx.x
     var local_tid = thread_idx.x
+    tb_sum[local_tid] = 0
 
     threads_in_grid = block_dim.x * grid_dim.x
     while i < SIZE:
